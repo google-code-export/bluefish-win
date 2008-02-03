@@ -1,0 +1,562 @@
+diff -wrx *.bak -x *.o src\about.c C:\msys\1.0\src\bluefish-1.0.7\src\about.c
+185a186,188
+> #ifdef WIN32
+> 		GdkPixbuf* pixbuf= gdk_pixbuf_new_from_file(BLUEFISH_PNG_PATH,&error);
+> #else
+186a190
+> #endif	/* WIN32 */		
+Only in C:\msys\1.0\src\bluefish-1.0.7\src: about.c.orig
+Only in src: bf_changed.7z
+diff -wrx *.bak -x *.o src\bf_lib.c C:\msys\1.0\src\bluefish-1.0.7\src\bf_lib.c
+33c33
+< 
+---
+> #ifndef _WIN_32_DIRSTRCHR
+40a41
+> #endif
+143a145,149
+> /* #ifdef WIN32
+> 	 return win_return_root_with_protocol(url);
+> #endif
+>  */	if (!url) return NULL;
+> 	g_print("return_root_with_protocol:%s\n",url);
+145,146c151,152
+< 	if (!url) return NULL;
+< 	q = strchr(url,':');
+---
+> 	gchar *tmpurl = g_strdup(url);
+> 	q = strchr(tmpurl,':');
+150c156
+< 		if (root) return g_strndup(url, root - url + 1);
+---
+> 		if (root) return g_strndup(tmpurl, root - url + 1);
+154c160
+< 		return g_strconcat(url, "/",NULL);
+---
+> 		return g_strconcat(tmpurl, "/",NULL);
+159a166,186
+> 	g_free(tmpurl);
+> 	return NULL;
+> }
+> 
+> gchar *win_return_root_with_protocol(const gchar *url){
+> #ifndef WIN32
+> 	return return_root_with_protocol( url);
+> #endif
+> 	if (!url) return NULL;
+> 	gchar *q;
+> 	if (g_str_has_prefix(url,"http://") ||g_str_has_prefix(url,"https://")
+> 		 ||g_str_has_prefix(url,"ftp://")||g_str_has_prefix(url,"sftp://")
+> 	    ||g_str_has_prefix(url,"file://")){
+> 			q =strchr(url,':');
+> 			return (g_strndup(url,q -url+1));
+> 	}else{
+> 		q = strchr(url,':');
+> 		if (q){
+> 			 return g_strconcat("/",g_strndup(url,q - url+1),NULL);
+> 		 }
+> 	 }
+940c967
+< 	//bf_chrrepl(filename,"\\","/");
+---
+> 	/* bf_chrrepl(filename,"\\","/"); */
+983c1010
+< 
+---
+> 	gchar *temp, *temp2;
+995a1023,1030
+> #ifdef WIN32
+> 	temp = strrchr(eff_current_filepath,DIRCHR);
+> 	if (temp == NULL){temp = strrchr(eff_current_filepath,'/');}
+> 	current_filename_length = (temp == NULL ? 0 : strlen(temp)-1);
+> 	temp2 = strrchr(eff_link_to_filepath, DIRCHR);
+> 	if (temp2 == NULL){temp2 = strrchr(eff_link_to_filepath, '/');}
+> 	link_to_filename_length = (temp2 == NULL ? 0 : strlen(temp2)-1);
+> #else	
+997a1033
+> #endif
+1049a1086,1087
+> 	g_free(temp);
+> 	g_free(temp2);
+1129c1167,1177
+< 
+---
+> #ifdef WIN32
+> 		gchar * tmp = g_strdup(dirname);
+> 	bf_chrrepl(tmp,"/","\\");
+> 	if (tmp[strlen(tmp)-1] == DIRCHR) {
+> 		g_free(tmp);
+> 		return g_strdup(dirname);
+> 	} else {
+> 		g_free(tmp);
+> 		return g_strconcat(dirname, "/", NULL);
+> 	}
+> #else
+1134a1183
+> #endif
+1148a1198,1200
+> #ifdef WIN32	
+> 	if (!tmp) {tmp = strrchr(filename, 47);}
+> #endif /* WIN32 */
+1170c1222,1228
+< 	gboolean retval=TRUE;
+---
+> 	/* not sure the purpose of returning true here by default so I changed it to false. */
+> 	gboolean retval=FALSE;
+> 
+> #ifdef WIN32
+> 	if (filename[0] == '/') { filename++;}
+> #endif /* WIN32 */
+> 
+1181c1239
+< #ifndef WIN32
+---
+> /* #ifndef WIN32 */
+1200c1258
+< #endif /* WIN32 */
+---
+> /* #endif */ /* NOT WIN32 */
+1333c1391,1393
+< 
+---
+> #ifdef WIN32
+> 	if (mkdir(name) != 0) {
+> #else
+1334a1395
+> #endif
+1453a1515,1540
+> /* Inplace replacement of character find with character repl in source string */
+> void bf_chrrepl(gchar *source,const gchar *find, const gchar *repl){
+> 	if (source){
+> 		gint i,len = strlen(source);
+> 		for (i =0; i<len ;i++)
+> 		{
+> 			if (source[i] == (gint)find[0]){
+> 				source[i]= (gint)repl[0];
+> 			}
+> 		}
+> 	}
+> }
+> 
+> /*
+> void fixpath(gchar *source){
+> 	if (source){
+> 		gint i,len = strlen(source);
+> 		for (i =0; i<len ;i++)
+> 		{
+> 			if (source[i]== 92){
+> 				source[i]= 47;
+> 			}
+> 		}
+> 	}
+> }
+> */
+diff -wrx *.bak -x *.o src\bf_lib.h C:\msys\1.0\src\bluefish-1.0.7\src\bf_lib.h
+78a79,81
+> void bf_chrrepl(gchar *source,const gchar *find, const gchar *repl);
+> /* void fixpath(gchar *source); */
+> gchar *win_return_root_with_protocol(const gchar *url);
+diff -wrx *.bak -x *.o src\bluefish.c C:\msys\1.0\src\bluefish-1.0.7\src\bluefish.c
+30a31
+> #define _GNU_SOURCE
+56a58,60
+> #ifdef WIN32
+> #include <windows.h>
+> #endif
+133a138,160
+> /* Dynamically create paths for Win32 */	
+> #ifdef WIN32
+>  	gchar *path = g_malloc0(MAXPATH+1);
+> 	gchar *ctmp = g_malloc0(MAXPATH+1);
+> 	if (GetModuleFileName(NULL,path,MAXPATH) != 0) {
+> 	DEBUG_MSG("GetModuleFileName=%s\n",path);
+> 	ctmp = g_strdup(path_get_dirname_with_ending_slash(path));
+> 	if (ctmp[strlen(ctmp)-1] == '\\'){
+> 		ctmp[strlen(ctmp)-1]='\0';
+> 		ctmp = g_strdup(path_get_dirname_with_ending_slash(ctmp));
+> 		}
+> 	PKG_DATA_DIR = g_strconcat(ctmp,"share\\bluefish\\",NULL);
+> 	LOCALE_DIR = g_strconcat(ctmp,"share\\locale",NULL);
+> 	BLUEFISH_PNG_PATH = g_strconcat(PKG_DATA_DIR,"bluefish_splash.png",NULL);
+> 	} else {
+> 	g_print("Configuration file(s) could not be found.\nExiting now.\n");
+> 	g_free(path);
+> 	g_free(ctmp);
+> 	bluefish_exit_request();	
+> 	}
+> 	g_free(path);
+> 	g_free(ctmp);
+> #endif /* WIN32 */
+142a170
+> #ifndef WIN32	
+144a173,176
+> #else
+> 	bindtextdomain(PACKAGE,LOCALE_DIR);
+> 	DEBUG_MSG("set bindtextdomain for %s to %s\n",PACKAGE,LOCALE_DIR);
+> #endif
+157a190
+> #ifndef WIN32
+158a192
+> #endif /* NOT WIN32 */
+238a273,275
+> #ifdef WIN32
+> 	gtk_window_move ((GtkWindow *)firstbfwin->main_window,0,0);
+> #endif
+288c325
+< 	if (main_v->props.show_splash_screen) {
+---
+> /* 	if (main_v->props.show_splash_screen) {
+291a329,333
+> 		gtk_widget_destroy(splash_window); */
+> 	if (main_v->props.show_splash_screen) {
+> 		/*static struct timespec const req = { 0, 10000000};*/
+> 		flush_queue();
+> 		/*nanosleep(&req, NULL);*/
+292a335
+> 		DEBUG_MSG("splash destroyed.\n");
+293a337
+> 
+297a342,343
+> 	DEBUG_MSG("calling bluefish_exit_request()\n");
+> 	bluefish_exit_request();
+301a348
+> 	 
+374c421,426
+< 	DEBUG_MSG("Bluefish: exiting cleanly\n");
+---
+> /* #ifdef WIN32
+> 	g_free(PKG_DATA_DIR);
+> 	g_free(LOCALE_DIR);
+> 	g_free(BLUEFISH_PNG_PATH);
+> #endif
+>  */	DEBUG_MSG("Bluefish: exiting cleanly\n");
+Only in C:\msys\1.0\src\bluefish-1.0.7\src: bluefish.exe
+diff -wrx *.bak -x *.o src\bluefish.h C:\msys\1.0\src\bluefish-1.0.7\src\bluefish.h
+29a30,37
+> #ifdef WIN32
+> #ifndef MAXPATH
+> #define MAXPATH 260
+> #endif /* MAXPATH */
+> gchar *PKG_DATA_DIR;
+> gchar *LOCALE_DIR;
+> gchar *BLUEFISH_PNG_PATH;
+> #endif 
+35a44,46
+> #ifdef WIN32
+> #define DEBUG_MSG printf
+> #else
+36a48
+> #endif /* WIN32 */
+39c51
+< #define DEBUG_MSG(args...)
+---
+> #define DEBUG_MSG(args,...)
+60a73,77
+> #ifdef WIN32
+> #define DIRSTR "\\"
+> #define DIRCHR 92
+> #define _WIN_32_DIRSTRCHR
+> #else
+62a80
+> #endif
+Only in C:\msys\1.0\src\bluefish-1.0.7\src: bluefish_.exe
+Only in C:\msys\1.0\src\bluefish-1.0.7\src: config.h
+Only in C:\msys\1.0\src\bluefish-1.0.7\src: ctime.c
+diff -wrx *.bak -x *.o src\document.c C:\msys\1.0\src\bluefish-1.0.7\src\document.c
+43c43,45
+< 
+---
+> #ifdef MINGW32
+> #include "ctime.c"
+> #endif
+49d50
+< 
+diff -wrx *.bak -x *.o src\fref.c C:\msys\1.0\src\bluefish-1.0.7\src\fref.c
+1818a1819
+> #ifndef WIN32
+1819a1821,1824
+> #else
+> 	printf("fref.c:1822\n");
+> 	fref_rescan_dir(PKG_DATA_DIR);
+> #endif
+Only in C:\msys\1.0\src\bluefish-1.0.7\src: gmon.out
+diff -wrx *.bak -x *.o src\gtk_easy.c C:\msys\1.0\src\bluefish-1.0.7\src\gtk_easy.c
+35a36
+> #ifndef _WIN_32_DIRSTRCHR
+37a39
+> #endif /* _WIN_32_DIRSTRCHR */
+diff -wrx *.bak -x *.o src\gui.c C:\msys\1.0\src\bluefish-1.0.7\src\gui.c
+1626c1626
+< 	static struct timespec const req = { 0, 10000000};
+---
+> 	/* static struct timespec const req = { 0, 10000000}; */
+1632c1632
+< 	nanosleep(&req, NULL);
+---
+> 	/* nanosleep(&req, NULL); */
+1636c1636
+< 	static struct timespec const req = { 0, 100000000};
+---
+> 	/* static struct timespec const req = { 0, 100000000}; */
+1657a1658,1660
+> #ifdef WIN32
+> 		GdkPixbuf* pixbuf= gdk_pixbuf_new_from_file(BLUEFISH_PNG_PATH,&error);
+> #else
+1658a1662
+> #endif /* WIN32 */		
+1673c1677
+< 	nanosleep(&req, NULL);
+---
+> 	/* nanosleep(&req, NULL); */
+diff -wrx *.bak -x *.o src\highlight.c C:\msys\1.0\src\bluefish-1.0.7\src\highlight.c
+29c29
+< #ifdef DEBUG
+---
+> /* #ifdef DEBUG
+32c32
+< 
+---
+>  */
+Only in C:\msys\1.0\src\bluefish-1.0.7\src: local
+Only in C:\msys\1.0\src\bluefish-1.0.7\src: Makefile
+diff -wrx *.bak -x *.o src\menu.c C:\msys\1.0\src\bluefish-1.0.7\src\menu.c
+979c979,981
+< 
+---
+> #ifdef WIN32
+> 	if (filename[0] == '/') { filename ++;}
+> #endif /* WIN32 */
+1032a1035,1038
+> #ifdef WIN32
+> 	if (filename[0] == '/') { filename ++;}
+> #endif /* WIN32 */
+> 
+1119a1126,1128
+> #ifdef WIN32
+> 	if (filename[0] == '/') {filename ++;}
+> #endif /* WIN32 */
+1330a1340,1343
+> #ifdef WIN32
+> 			if (tmpstring[0] == '/')
+> 				chdir(tmpstring + 1);
+> #else
+1331a1345
+> #endif /* WIN32 */
+Only in src: patch.txt
+diff -wrx *.bak -x *.o src\preferences.c C:\msys\1.0\src\bluefish-1.0.7\src\preferences.c
+1148a1149
+> #ifndef WIN32	
+1151a1153,1161
+> #else
+> 	gchar *pkgtmp = g_strdup("");
+> 	printf("preferences.c:1155\n");
+> 	pkgtmp = g_strconcat(pkgtmp,PKG_DATA_DIR,"highlighting.default",NULL);
+> 	gchar *defaultfile = return_first_existing_filename(pkgtmp,
+> 									"data/highlighting.default",
+> 									"../data/highlighting.default",NULL);
+> 	g_free(pkgtmp);
+> #endif
+diff -wrx *.bak -x *.o src\project.c C:\msys\1.0\src\bluefish-1.0.7\src\project.c
+63a64,68
+> 
+> #ifdef WIN32
+> 	/* if (filename[0] == '/') { filename ++;} */
+> #endif /* WIN32 */
+> 	
+diff -wrx *.bak -x *.o src\rcfile.c C:\msys\1.0\src\bluefish-1.0.7\src\rcfile.c
+189a190,192
+> #ifdef WIN32
+> 				/* bf_chrrepl(tmpstring,"\\","/"); */
+> #endif /* WIN32 */
+335a339
+> #ifndef WIN32
+337a342,352
+> #else
+> 	gchar *pkgtmp = g_strdup("");
+> 	gchar *pkgtmp2 = g_strdup("");
+> 	pkgtmp = g_strconcat(pkgtmp,PKG_DATA_DIR,"icon_unknown.png",NULL);
+> 	pkgtmp2 = g_strconcat(pkgtmp,PKG_DATA_DIR,"icon_dir.png",NULL);
+> 	init_prop_string    (&config_rc, &main_v->props.filebrowser_unknown_icon, "fb_unknown_icon:", pkgtmp);
+> 	init_prop_string    (&config_rc, &main_v->props.filebrowser_dir_icon, "fb_dir_icon:", pkgtmp2);
+> 	g_free(pkgtmp);
+> 	g_free(pkgtmp2);
+> #endif /* not WIN32 */
+> 	
+502a518
+> #ifndef WIN32
+512a529,534
+> #else
+> 		arr = array_from_arglist(_("Firefox"), "C:/Progra~1/Mozill~1/firefox.exe -remote 'openURL(%s, new-tab)' || firefox %s&",NULL);
+> 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
+> 		arr = array_from_arglist(_("Internet Explorer"), "C:/PROGRA~1/INTERN~1/IEXPLORE.EXE %s || iexplore %s",NULL);
+> 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
+> #endif /* WIN32 */
+514a537
+> #ifndef WIN32
+517a541,547
+> #else
+> 		gchar *tmp = g_strdup("");
+> 		tmp = g_strconcat(tmp,PKG_DATA_DIR,"encodings.default",NULL);
+> 		gchar *defaultfile = return_first_existing_filename(tmp,
+> 											"data/encodings.default",
+> 										"../data/encodings.default",NULL);
+> #endif
+523c553,557
+< 				g_print("Unable to find '"PKGDATADIR"encodings.default'\n");
+---
+> #ifndef WIN32				
+> 				DEBUG_MSG("Unable to find '"PKGDATADIR"encodings.default'\n");
+> #else		
+> 			   DEBUG_MSG("Unable to find '%s\n",tmp);
+> #endif
+530a565,567
+> #ifdef WIN32
+> 		g_free(tmp);
+> #endif
+551a589
+> #ifndef WIN32
+554a593,599
+> #else
+> 		gchar *tmp = g_strdup("");
+> 		tmp = g_strconcat(tmp,PKG_DATA_DIR,"filetypes.default",NULL);
+> 		gchar *defaultfile = return_first_existing_filename(PKG_DATA_DIR,
+> 									"data/filetypes.default",
+> 									"../data/filetypes.default",NULL);
+> #endif
+559a605
+> #ifndef WIN32				
+560a607,609
+> #else
+> 				g_print("Unable to find'%s\n",tmp);
+> #endif
+567a617,619
+> #ifdef WIN32		
+> 		g_free(tmp);
+> #endif
+586a639
+> #ifndef WIN32		
+587a641,643
+> #else
+> 		fref_rescan_dir(PKG_DATA_DIR);
+> #endif 
+643a700
+> #ifndef WIN32	
+646a704,710
+> #else
+> 	gchar *tmp = g_strdup("");
+> 	tmp = g_strconcat(tmp,PKG_DATA_DIR,"highlighting.default",NULL);
+> 	defaultfile = return_first_existing_filename(tmp,
+> 									"data/highlighting.default",
+> 									"../data/highlighting.default",NULL);
+> #endif	
+651a716
+> #ifndef WIN32			
+652a718,720
+> #else
+> 			g_print("Unable to find '%s\n",PKG_DATA_DIR);
+> #endif
+662a731,733
+> #ifdef WIN32
+> 	g_free(tmp);
+> #endif
+704a776
+> #ifndef WIN32			
+705a778,781
+> #else
+> 			g_print("defaultfile=%s\n",defaultfile);
+> 			g_print("Unable to find '%scustom_menu.default'\n",PKG_DATA_DIR);
+> #endif
+761a838
+> 	gchar *tmp3 =NULL;
+780a858
+> #ifndef WIN32		
+782c860,863
+< 		DEBUG_MSG("rcfile_parse_custom_menu, langdefaultfile1 is: %s", langdefaultfile1);
+---
+> #else
+> 		langdefaultfile1 = g_strconcat(PKG_DATA_DIR,"custom_menu.",tmp,".default", NULL);
+> #endif
+> 		DEBUG_MSG("rcfile_parse_custom_menu, langdefaultfile1 is: %s\n", langdefaultfile1);
+783a865
+> #ifndef WIN32		
+785c867,870
+< 		DEBUG_MSG("rcfile_parse_custom_menu, langdefaultfile2 is: %s", langdefaultfile2);
+---
+> #else
+> 		langdefaultfile2 = g_strconcat(PKG_DATA_DIR,"custom_menu.",tmp,".default", NULL);
+> #endif
+> 		DEBUG_MSG("rcfile_parse_custom_menu, langdefaultfile2 is: %s\n", langdefaultfile2);
+787a873,877
+> #ifdef WIN32
+> 	tmp3 = g_strconcat(PKG_DATA_DIR,"custom_menu.default",NULL);
+> #else
+> 	tmp3 = g_strconcat(PKGDATADIR"custom_menu.default",NULL);
+> #endif
+790c880
+< 									PKGDATADIR"custom_menu.default",
+---
+> 									tmp3,
+794c884
+< 		defaultfile = return_first_existing_filename(PKGDATADIR"custom_menu.default",
+---
+> 		defaultfile = return_first_existing_filename(tmp3,
+798c888,889
+< 	DEBUG_MSG("rcfile_parse_custom_menu, defaultfile is: %s", defaultfile);
+---
+> g_free(tmp3);	
+> 	DEBUG_MSG("rcfile_parse_custom_menu, defaultfile is: %s\n", defaultfile);
+827a919,921
+> #ifdef WIN32
+> 		mkdir(rcdir);
+> #else
+828a923
+> #endif		
+Only in src: report.html
+diff -wrx *.bak -x *.o src\snr2.c C:\msys\1.0\src\bluefish-1.0.7\src\snr2.c
+1648a1649,1652
+> #ifdef WIN32
+> 		/* bf_chrrepl(olddirfile,"/","\\"); */
+> #endif
+> 		
+1672a1677,1679
+> #ifdef WIN32
+> 		/* bf_chrrepl(possible_filename,"/","\\"); */
+> #endif
+1677a1685,1687
+> #ifdef WIN32
+> 		/* bf_chrrepl(eff_my_filename,"/","\\"); */
+> #endif
+diff -wrx *.bak -x *.o src\stringlist.c C:\msys\1.0\src\bluefish-1.0.7\src\stringlist.c
+758a759,763
+> 
+> #ifdef WIN32
+> 	if (filename[0] == '/') { filename++;}
+> #endif /* WIN32 */
+> 	
+769c774
+< 			gchar *tempstr;
+---
+> 			gchar *tempstr= NULL;
+770a776,780
+> #ifdef WIN32	
+> 			if (tmpbuf[0] == '/'){
+> 				tempstr = g_strdup(tempstr+1);
+> 			DEBUG_MSG("Adjusted tempstr\n");
+> 			}else{
+771a782,785
+> 		}
+> #else  
+> 		tempstr = g_strdup(tmpbuf);
+> #endif /* WIN32 */
+829a844,848
+> #ifdef WIN32
+> 		if (tmpstr[0] == '/') {tmpstr++;}
+> 		fputs(tmpstr, fd);
+> 		tmpstr--;
+> #else
+830a850
+> #endif /* WIN32 */
+1082a1103
+> 	DEBUG_MSG("arraylist_append_identical_from_file: back from get_list\n");
+1156a1178
+> 	DEBUG_MSG("arraylist_load_new_identifiers_from_file: back from get_list\n");
