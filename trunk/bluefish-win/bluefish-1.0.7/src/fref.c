@@ -1816,7 +1816,11 @@ static void fref_popup_menu_rescan_lcb(GtkWidget * widget, gpointer user_data)
 {
 	gchar *userdir = g_strconcat(g_get_home_dir(), "/.bluefish/", NULL);
 	DEBUG_MSG("fref_popup_menu_rescan_lcb, started\n");
+#ifndef WIN32
 	fref_rescan_dir(PKGDATADIR);
+#else
+	fref_rescan_dir(PKG_DATA_DIR);
+#endif
 	fref_rescan_dir(userdir);
 	g_free(userdir);
 	DEBUG_MSG("about to refill toplevels\n");

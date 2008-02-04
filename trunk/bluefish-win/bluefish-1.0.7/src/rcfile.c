@@ -187,6 +187,9 @@ static gint save_config_file(GList * config_list, gchar * filename)
 				DEBUG_MSG("save_config_file, tmpstring2(%p)=%s\n", tmpstring2, tmpstring2);
 				tmpstring = g_strdup_printf("%s %s", tmpitem->identifier, tmpstring2);
 				DEBUG_MSG("save_config_file, tmpstring(%p)=%s\n", tmpstring, tmpstring);
+#ifdef WIN32
+				/* bf_chrrepl(tmpstring,"\\","/"); */
+#endif /* WIN32 */
 				rclist = g_list_append(rclist, tmpstring);
 				tmplist2 = g_list_previous(tmplist2);
 				max--;
@@ -333,8 +336,20 @@ static GList *props_init_main(GList * config_rc)
 	init_prop_integer   (&config_rc, &main_v->props.filebrowser_show_backup_files, "fb_show_backup_f:", 0, TRUE);
 	init_prop_integer   (&config_rc, &main_v->props.filebrowser_two_pane_view, "fb_two_pane_view:", 1, TRUE);
 	init_prop_integer   (&config_rc, &main_v->props.filebrowser_focus_follow, "fb_focus_follow:", 1, TRUE);
+#ifndef WIN32
 	init_prop_string    (&config_rc, &main_v->props.filebrowser_unknown_icon, "fb_unknown_icon:", PKGDATADIR"icon_unknown.png");
 	init_prop_string    (&config_rc, &main_v->props.filebrowser_dir_icon, "fb_dir_icon:", PKGDATADIR"icon_dir.png");
+#else
+	gchar *pkgtmp = g_strdup("");
+	gchar *pkgtmp2 = g_strdup("");
+	pkgtmp = g_strconcat(PKG_DATA_DIR,"icon_unknown.png",NULL);
+	pkgtmp2 = g_strconcat(PKG_DATA_DIR,"icon_dir.png",NULL);
+	init_prop_string    (&config_rc, &main_v->props.filebrowser_unknown_icon, "fb_unknown_icon:", pkgtmp);
+	init_prop_string    (&config_rc, &main_v->props.filebrowser_dir_icon, "fb_dir_icon:", pkgtmp2);
+	g_free(pkgtmp);
+	g_free(pkgtmp2);
+#endif /* not WIN32 */
+	
 	init_prop_string    (&config_rc, &main_v->props.editor_font_string, "editor_font_string:", "courier 11");
 	init_prop_integer   (&config_rc, &main_v->props.editor_tab_width, "editor_tab_width:", 3, TRUE);
 	init_prop_integer   (&config_rc, &main_v->props.editor_smart_cursor, "editor_smart_cursor:", 1, TRUE);
@@ -500,6 +515,7 @@ void rcfile_parse_main(void)
 	if (main_v->props.browsers == NULL) {
 		/* if the user does not have browsers --> set them to defaults values */
 		gchar **arr;
+#ifndef WIN32
 		arr = array_from_arglist(_("Galeon"), "galeon -x %s&",NULL);
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
 		arr = array_from_arglist(_("Mozilla"), "mozilla -remote 'openURL(%s, new-window)' || mozilla %s&",NULL);
@@ -510,17 +526,35 @@ void rcfile_parse_main(void)
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
 		arr = array_from_arglist(_("Gnome default"), "gnome-moz-remote --newwin %s&",NULL);
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
+#else
+		arr = array_from_arglist(_("Firefox"), "C:/Progra~1/Mozill~1/firefox.exe -remote 'openURL(%s, new-tab)' || firefox %s&",NULL);
+		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
+		arr = array_from_arglist(_("Internet Explorer"), "C:/PROGRA~1/INTERN~1/IEXPLORE.EXE %s || iexplore %s",NULL);
+		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
+#endif /* WIN32 */
 	}
 	{
+#ifndef WIN32
 		gchar *defaultfile = return_first_existing_filename(PKGDATADIR"encodings.default",
 											"data/encodings.default",
 										"../data/encodings.default",NULL);
+#else
+		gchar *tmp = g_strdup("");
+		tmp = g_strconcat(PKG_DATA_DIR,"encodings.default",NULL);
+		gchar *defaultfile = return_first_existing_filename(tmp,
+											"data/encodings.default",
+										"../data/encodings.default",NULL);
+#endif
 		if (main_v->props.encodings == NULL) {
 			/* if the user does not have encodings --> set them to defaults values */
 			if (defaultfile) {
 				main_v->props.encodings = get_list(defaultfile,NULL,TRUE);
 			} else {
-				g_print("Unable to find '"PKGDATADIR"encodings.default'\n");
+#ifndef WIN32				
+				DEBUG_MSG("Unable to find '"PKGDATADIR"encodings.default'\n");
+#else		
+			   DEBUG_MSG("Unable to find '%s\n",tmp);
+#endif
 			}
 		} else {
 			if (config_file_is_newer(main_v->globses.lasttime_encodings,defaultfile)) {
@@ -528,6 +562,9 @@ void rcfile_parse_main(void)
 				main_v->globses.lasttime_encodings = TIME_T_TO_GINT(time(NULL));
 			}
 		}
+#ifdef WIN32
+		g_free(tmp);
+#endif
 		g_free(defaultfile);
 	}
 	if (main_v->props.outputbox==NULL) {
@@ -549,15 +586,27 @@ void rcfile_parse_main(void)
 		main_v->props.external_commands = g_list_append(main_v->props.external_commands,arr);
 	}
 	{
+#ifndef WIN32
 		gchar *defaultfile = return_first_existing_filename(PKGDATADIR"filetypes.default",
 									"data/filetypes.default",
 									"../data/filetypes.default",NULL);
+#else
+		gchar *tmp = g_strdup("");
+		tmp = g_strconcat(PKG_DATA_DIR,"filetypes.default",NULL);
+		gchar *defaultfile = return_first_existing_filename(PKG_DATA_DIR,
+									"data/filetypes.default",
+									"../data/filetypes.default",NULL);
+#endif
 		if (main_v->props.filetypes == NULL) {
 			/* if the user does not have file-types --> set them to defaults values */
 			if (defaultfile) {
 				main_v->props.filetypes = get_list(defaultfile,NULL,TRUE);
 			} else {
+#ifndef WIN32				
 				g_print("Unable to find '"PKGDATADIR"filetypes.default'\n");
+#else
+				g_print("Unable to find'%s\n",tmp);
+#endif
 			}
 		} else {
 			if (config_file_is_newer(main_v->globses.lasttime_filetypes,defaultfile)) {
@@ -565,6 +614,9 @@ void rcfile_parse_main(void)
 				main_v->globses.lasttime_filetypes = TIME_T_TO_GINT(time(NULL));
 			}
 		}
+#ifdef WIN32		
+		g_free(tmp);
+#endif
 		g_free(defaultfile);
 	}
 	if (main_v->props.filefilters == NULL) {
@@ -584,7 +636,11 @@ void rcfile_parse_main(void)
 	if (main_v->props.reference_files == NULL) {
 		gchar *userdir = g_strconcat(g_get_home_dir(), "/.bluefish/", NULL);
 		/* if the user does not yet have any function reference files, set them to default values */
+#ifndef WIN32		
 		fref_rescan_dir(PKGDATADIR);
+#else
+		fref_rescan_dir(PKG_DATA_DIR);
+#endif 
 		fref_rescan_dir(userdir);
 		g_free(userdir);
 	}
@@ -641,15 +697,27 @@ void rcfile_parse_highlighting(void) {
 	init_prop_arraylist(&highlighting_configlist, &main_v->props.highlight_patterns, "patterns:", 0, TRUE);
 
 	filename = g_strconcat(g_get_home_dir(), "/.bluefish/highlighting", NULL);
+#ifndef WIN32	
 	defaultfile = return_first_existing_filename(PKGDATADIR"highlighting.default",
 									"data/highlighting.default",
 									"../data/highlighting.default",NULL);
+#else
+	gchar *tmp = g_strdup("");
+	tmp = g_strconcat(PKG_DATA_DIR,"highlighting.default",NULL);
+	defaultfile = return_first_existing_filename(tmp,
+									"data/highlighting.default",
+									"../data/highlighting.default",NULL);
+#endif	
 	if (!parse_config_file(highlighting_configlist, filename)) {
 		/* init the highlighting in some way? */
 		if (defaultfile) {
 			main_v->props.highlight_patterns = get_list(defaultfile,NULL,TRUE);
 		} else {
+#ifndef WIN32			
 			g_print("Unable to find '"PKGDATADIR"highlighting.default'\n");
+#else
+			g_print("Unable to find '%s\n",PKG_DATA_DIR);
+#endif
 		}
 		save_config_file(highlighting_configlist, filename);
 		DEBUG_MSG("rcfile_parse_highlighting, done saving\n");
@@ -660,6 +728,9 @@ void rcfile_parse_highlighting(void) {
 			main_v->globses.lasttime_highlighting = TIME_T_TO_GINT(time(NULL));*/
 		}
 	}
+#ifdef WIN32
+	g_free(tmp);
+#endif
 	g_free(filename);
 	g_free(defaultfile);
 }
@@ -702,7 +773,12 @@ static void rcfile_custom_menu_load_all(gboolean full_reset, gchar *defaultfile)
 		if (defaultfile) {
 			parse_config_file(custom_menu_configlist, defaultfile);
 		} else {
+#ifndef WIN32			
 			g_print("Unable to find '"PKGDATADIR"custom_menu.default'\n");
+#else
+			g_print("defaultfile=%s\n",defaultfile);
+			g_print("Unable to find '%scustom_menu.default'\n",PKG_DATA_DIR);
+#endif
 		}
 	}
 	g_free(filename);
@@ -759,6 +835,7 @@ static void rcfile_custom_menu_load_all(gboolean full_reset, gchar *defaultfile)
 */
 void rcfile_parse_custom_menu(gboolean full_reset, gboolean load_new) {
 	gchar *defaultfile, *langdefaultfile1=NULL, *langdefaultfile2=NULL, *tmp;
+	gchar *tmp3 =NULL;
 	const gchar *tmp2;
 	DEBUG_MSG("rcfile_parse_custom_menu, started\n");
 
@@ -778,24 +855,38 @@ void rcfile_parse_custom_menu(gboolean full_reset, gboolean load_new) {
 	if (tmp && strlen(tmp)>0) {
 		tmp = trunc_on_char(tmp, '.');
 		tmp = trunc_on_char(tmp, '@');
+#ifndef WIN32		
 		langdefaultfile1 = g_strconcat(PKGDATADIR"custom_menu.",tmp,".default", NULL);
-		DEBUG_MSG("rcfile_parse_custom_menu, langdefaultfile1 is: %s", langdefaultfile1);
+#else
+		langdefaultfile1 = g_strconcat(PKG_DATA_DIR,"custom_menu.",tmp,".default", NULL);
+#endif
+		DEBUG_MSG("rcfile_parse_custom_menu, langdefaultfile1 is: %s\n", langdefaultfile1);
 		tmp = trunc_on_char(tmp, '_');
+#ifndef WIN32		
 		langdefaultfile2 = g_strconcat(PKGDATADIR"custom_menu.",tmp,".default", NULL);
-		DEBUG_MSG("rcfile_parse_custom_menu, langdefaultfile2 is: %s", langdefaultfile2);
+#else
+		langdefaultfile2 = g_strconcat(PKG_DATA_DIR,"custom_menu.",tmp,".default", NULL);
+#endif
+		DEBUG_MSG("rcfile_parse_custom_menu, langdefaultfile2 is: %s\n", langdefaultfile2);
 		g_free(tmp);
 	}
+#ifdef WIN32
+	tmp3 = g_strconcat(PKG_DATA_DIR,"custom_menu.default",NULL);
+#else
+	tmp3 = g_strconcat(PKGDATADIR"custom_menu.default",NULL);
+#endif
 	if (langdefaultfile1) {
 		defaultfile = return_first_existing_filename(langdefaultfile1, langdefaultfile2,
-									PKGDATADIR"custom_menu.default",
+									tmp3,
 									"data/custom_menu.default",
 									"../data/custom_menu.default",NULL);
 	} else {
-		defaultfile = return_first_existing_filename(PKGDATADIR"custom_menu.default",
+		defaultfile = return_first_existing_filename(tmp3,
 									"data/custom_menu.default",
 									"../data/custom_menu.default",NULL);
 	}
-	DEBUG_MSG("rcfile_parse_custom_menu, defaultfile is: %s", defaultfile);
+g_free(tmp3);	
+	DEBUG_MSG("rcfile_parse_custom_menu, defaultfile is: %s\n", defaultfile);
 	
 	if (full_reset) {
 		free_arraylist(main_v->props.cmenu_insert);
@@ -825,7 +916,11 @@ static gint rcfile_save_custom_menu(void) {
 void rcfile_check_directory(void) {
 	gchar *rcdir = g_strconcat(g_get_home_dir(), "/.bluefish", NULL);
 	if (!g_file_test(rcdir, G_FILE_TEST_IS_DIR)) {
+#ifdef WIN32
+		mkdir(rcdir);
+#else
 		mkdir(rcdir, DIR_MODE);
+#endif		
 	}
 	g_free(rcdir);
 }

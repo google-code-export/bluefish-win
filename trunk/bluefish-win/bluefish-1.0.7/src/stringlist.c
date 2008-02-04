@@ -756,6 +756,11 @@ GList *get_list(const gchar * filename, GList * which_list, gboolean is_arraylis
 	if (filename == NULL) {
 		return NULL;
 	}
+
+#ifdef WIN32
+	if (filename[0] == '/') { filename++;}
+#endif /* WIN32 */
+	
 	if (file_exists_and_readable(filename)) {
 		FILE *fd;
 		gchar *tmpbuf;
@@ -766,9 +771,18 @@ GList *get_list(const gchar * filename, GList * which_list, gboolean is_arraylis
 		}
 		tmpbuf = g_malloc(STRING_MAX_SIZE);
 		while (fgets(tmpbuf, STRING_MAX_SIZE, fd) != NULL) {
-			gchar *tempstr;
+			gchar *tempstr= NULL;
 			tmpbuf = trunc_on_char(tmpbuf, '\n');
+#ifdef WIN32	
+			if (tmpbuf[0] == '/'){
+				tempstr = g_strdup(tmpbuf+1);
+			DEBUG_MSG("Adjusted tempstr\n");
+			}else{
 			tempstr = g_strdup(tmpbuf);
+		}
+#else  
+		tempstr = g_strdup(tmpbuf);
+#endif /* WIN32 */
 			if (is_arraylist) {
 				gchar **temparr = string_to_array(tempstr);
 				which_list = g_list_append(which_list, temparr);
@@ -827,7 +841,13 @@ gboolean put_stringlist_limited(gchar * filename, GList * which_list, gint maxen
 	while (tmplist) {
 		gchar *tmpstr = g_strndup((char *) tmplist->data, STRING_MAX_SIZE - 1);
 		DEBUG_MSG("put_stringlist_limited, tmplist(%p), adding string(%p)=%s (strlen=%d)the file\n", tmplist, tmpstr, tmpstr, strlen(tmpstr));
+#ifdef WIN32
+		if (tmpstr[0] == '/') {tmpstr++;}
 		fputs(tmpstr, fd);
+		tmpstr--;
+#else
+		fputs(tmpstr,fd);
+#endif /* WIN32 */
 		g_free(tmpstr);
 		fputs("\n", fd);
 		tmplist = g_list_next(tmplist);
@@ -1080,6 +1100,7 @@ GList *arraylist_append_identical_from_list(GList *thelist, GList *source, gchar
  */
 GList *arraylist_append_identical_from_file(GList *thelist, const gchar *sourcefilename, gchar **compare, gint testlevel, gboolean case_sensitive) {
 	GList *sourcelist = get_list(sourcefilename,NULL,TRUE);
+	DEBUG_MSG("arraylist_append_identical_from_file: back from get_list\n");
 	thelist = arraylist_append_identical_from_list(thelist, sourcelist, compare, testlevel, case_sensitive);
 	free_arraylist(sourcelist);
 	return thelist;
@@ -1154,6 +1175,7 @@ GList *arraylist_load_new_identifiers_from_list(GList *mylist, GList *deflist, g
  */
 GList *arraylist_load_new_identifiers_from_file(GList *mylist, const gchar *fromfilename, gint uniquelevel) {
 	GList *deflist = get_list(fromfilename,NULL,TRUE);
+	DEBUG_MSG("arraylist_load_new_identifiers_from_file: back from get_list\n");
 	mylist = arraylist_load_new_identifiers_from_list(mylist, deflist, uniquelevel);
 	free_arraylist(deflist);
 	return mylist;	

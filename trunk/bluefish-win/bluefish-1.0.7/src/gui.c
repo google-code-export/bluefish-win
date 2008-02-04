@@ -1623,17 +1623,17 @@ void go_to_line_from_selection_cb(Tbfwin *bfwin,guint callback_action, GtkWidget
 #ifndef NOSPLASH
 
 void splash_screen_set_label(gchar *label) {
-	static struct timespec const req = { 0, 10000000};
+	/* static struct timespec const req = { 0, 10000000}; */
 #ifdef DEBUG
 	g_print("Setting splash label to %s\n", label);
 #endif
 	gtk_label_set(GTK_LABEL(splashscreen.label),label);
 	flush_queue();
-	nanosleep(&req, NULL);
+	/* nanosleep(&req, NULL); */
 }
 
 GtkWidget *start_splash_screen() {
-	static struct timespec const req = { 0, 100000000};
+	/* static struct timespec const req = { 0, 100000000}; */
 	GtkWidget *image, *vbox;
 	GdkColor color;
 
@@ -1655,7 +1655,11 @@ GtkWidget *start_splash_screen() {
 	gtk_widget_show(splashscreen.label);
 	{
 		GError *error=NULL;
+#ifdef WIN32
+		GdkPixbuf* pixbuf= gdk_pixbuf_new_from_file(BLUEFISH_PNG_PATH,&error);
+#else
 		GdkPixbuf* pixbuf= gdk_pixbuf_new_from_file(BLUEFISH_SPLASH_FILENAME,&error);
+#endif /* WIN32 */		
 		if (error) {
 			g_print("ERROR while loading splash screen: %s\n", error->message);
 			g_error_free(error);
@@ -1670,7 +1674,7 @@ GtkWidget *start_splash_screen() {
 	gtk_widget_show(splashscreen.window);
 	flush_queue();
 	DEBUG_MSG("start_splash_screen, should be visible\n");
-	nanosleep(&req, NULL);
+	/* nanosleep(&req, NULL); */
 	return splashscreen.window;
 }
 #endif /* #ifndef NOSPLASH */

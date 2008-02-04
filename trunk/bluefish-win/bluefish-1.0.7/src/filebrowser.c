@@ -2052,23 +2052,35 @@ void filebrowser_cleanup(Tbfwin *bfwin) {
 	}
 }
 
-/* this function is omly called once for every bluefish process */
+/* this function is only called once for every bluefish process */
 void filebrowserconfig_init() {
 	gchar *filename;
 	Tfilebrowserconfig *fc = g_new0(Tfilebrowserconfig,1);
 	main_v->filebrowserconfig = fc;
-
+/* This function did not work with a relative path in rcfile_v2
+ * so I added the PKG_DATA_DIR path to the search list. -spodhaje*/
+#ifdef WIN32
+	gchar *tmp = g_strconcat(PKG_DATA_DIR,"icon_unknown.png",NULL);
+	gchar *tmp2 = g_strconcat(PKG_DATA_DIR,"icon_dir.png",NULL);
+	DEBUG_MSG("Expected path for icon_unknown.png:%s\n",tmp);
+	DEBUG_MSG("Expected path for icon_dir.png:%s\n",tmp2);
+#else
+	gchar *tmp = g_strdup(PKGDATADIR"icon_unknown.png");
+	gchar *tmp2 = g_strdup(PKGDATADIR"icon_dir.png");
+#endif
 	filename = return_first_existing_filename(main_v->props.filebrowser_unknown_icon,
-					"icon_unknown.png","../icons/icon_unknown.png",
+					"icon_unknown.png","../icons/icon_unknown.png",tmp,
 					"icons/icon_unknown.png",NULL);
-		
+	DEBUG_MSG("return from return_first_existing_filename:%s\n",filename);
+	g_free(tmp);
 	fc->unknown_icon = gdk_pixbuf_new_from_file(filename, NULL);
 	g_free(filename);
 		
 	filename = return_first_existing_filename(main_v->props.filebrowser_dir_icon,
-					"icon_dir.png","../icons/icon_dir.png",
+					"icon_dir.png","../icons/icon_dir.png",tmp2,
 					"icons/icon_dir.png",NULL);
-
+	DEBUG_MSG("return from return_first_existing_filename:%s\n",filename);
+	g_free(tmp2);
 	fc->dir_icon = gdk_pixbuf_new_from_file(filename, NULL);
 	g_free(filename);
 }

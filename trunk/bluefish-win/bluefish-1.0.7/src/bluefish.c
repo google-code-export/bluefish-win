@@ -28,6 +28,7 @@
 
 #include "bluefish.h"
 
+#define _GNU_SOURCE
 #ifdef HAVE_GNOME_VFS
 #include <libgnomevfs/gnome-vfs.h>
 #endif
@@ -54,6 +55,9 @@
 #include "rcfile.h"        /* rcfile_parse_main() */
 #include "stringlist.h"    /* put_stringlist(), get_stringlist() */
 
+#ifdef WIN32
+#include <windows.h>
+#endif
 /*********************************************/
 /* this var is global for all bluefish files */
 /*********************************************/
@@ -131,6 +135,31 @@ static gint parse_commandline(int argc, char **argv
 
 int main(int argc, char *argv[])
 {
+/* Dynamically create paths for Win32 */	
+#ifdef WIN32
+ 	gchar *path = g_malloc0(MAXPATH+1);
+	gchar *ctmp = g_malloc0(MAXPATH+1);
+	if (GetModuleFileName(NULL,path,MAXPATH) != 0) {
+	DEBUG_MSG("GetModuleFileName=%s\n",path);
+	
+	ctmp = g_strdup(path_get_dirname_with_ending_slash(path));
+	if (ctmp[strlen(ctmp)-1] == '\\'){
+		ctmp[strlen(ctmp)-1]='\0';
+		ctmp = g_strdup(path_get_dirname_with_ending_slash(ctmp));
+		}
+	bf_chrrepl(ctmp,"\\","/");	
+	PKG_DATA_DIR = g_strconcat(ctmp,"share/bluefish/",NULL);
+	LOCALE_DIR = g_strconcat(ctmp,"share/locale",NULL);
+	BLUEFISH_PNG_PATH = g_strconcat(PKG_DATA_DIR,"bluefish_splash.png",NULL);
+	} else {
+	g_print("Configuration file(s) could not be found.\nExiting now.\n");
+	g_free(path);
+	g_free(ctmp);
+	bluefish_exit_request();	
+	}
+	g_free(path);
+	g_free(ctmp);
+#endif /* WIN32 */
 	gboolean root_override=FALSE, open_in_new_window=FALSE;
 	GList *filenames = NULL, *projectfiles=NULL;
 	Tbfwin *firstbfwin;
@@ -139,9 +168,14 @@ int main(int argc, char *argv[])
 #endif /* #ifndef NOSPLASH */
 
 #ifdef ENABLE_NLS                                                               
-	setlocale(LC_ALL,"");                                                   
+	setlocale(LC_ALL,""); 
+#ifndef WIN32	
 	bindtextdomain(PACKAGE,LOCALEDIR);
 	DEBUG_MSG("set bindtextdomain for %s to %s\n",PACKAGE,LOCALEDIR);
+#else
+	bindtextdomain(PACKAGE,LOCALE_DIR);
+	DEBUG_MSG("set bindtextdomain for %s to %s\n",PACKAGE,LOCALE_DIR);
+#endif
 	bind_textdomain_codeset(PACKAGE, "UTF-8");
 	textdomain(PACKAGE);                                                    
 #endif
@@ -155,7 +189,9 @@ int main(int argc, char *argv[])
 	DEBUG_MSG("main, we have gnome_vfs, so we init it\n");
 	gnome_vfs_init();
 #ifdef HAVE_ATLEAST_GNOMEUI_2_6
+#ifndef WIN32
 	gnome_authentication_manager_init();
+#endif /* NOT WIN32 */
 #else
 #ifdef HAVE_ATLEAST_GNOMEVFS_2_6
 	set_authen_callbacks();
@@ -236,6 +272,9 @@ int main(int argc, char *argv[])
 	}
 
 	gui_show_main(firstbfwin);
+#ifdef WIN32
+	gtk_window_move ((GtkWindow *)firstbfwin->main_window,0,0);
+#endif
 	if (firstbfwin->session->view_html_toolbar && 
          main_v->globses.quickbar_items == NULL && 
          main_v->props.show_quickbar_tip == TRUE) 
@@ -286,19 +325,24 @@ int main(int argc, char *argv[])
 	
 #ifndef NOSPLASH
 	if (main_v->props.show_splash_screen) {
-		static struct timespec const req = { 0, 10000000};
+		/*static struct timespec const req = { 0, 10000000};*/
 		flush_queue();
-		nanosleep(&req, NULL);
+		/*nanosleep(&req, NULL);*/
 		gtk_widget_destroy(splash_window);
-	}
+		DEBUG_MSG("splash destroyed.\n");
+	}	
+
 #endif /* #ifndef NOSPLASH */
 	DEBUG_MSG("main, before gtk_main()\n");
 	gtk_main();
 	DEBUG_MSG("main, after gtk_main()\n");
+	DEBUG_MSG("calling bluefish_exit_request()\n");
+	bluefish_exit_request();
 #ifdef WITH_MSG_QUEUE	
 	/* do the cleanup */
 	msg_queue_cleanup();
 #endif /* WITH_MSG_QUEUE */
+	 
 	DEBUG_MSG("Bluefish: exiting cleanly\n");
 	return 0;
 }
@@ -371,6 +415,11 @@ void bluefish_exit_request() {
 	/* do the cleanup */
 	msg_queue_cleanup();
 #endif /* WITH_MSG_QUEUE */
-	DEBUG_MSG("Bluefish: exiting cleanly\n");
+/* #ifdef WIN32
+	g_free(PKG_DATA_DIR);
+	g_free(LOCALE_DIR);
+	g_free(BLUEFISH_PNG_PATH);
+#endif
+ */	DEBUG_MSG("Bluefish: exiting cleanly\n");
 	exit(0);
 }

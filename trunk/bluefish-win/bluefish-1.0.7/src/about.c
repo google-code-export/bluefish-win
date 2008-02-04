@@ -55,123 +55,123 @@ void about_dialog_create(gpointer * data, guint * callback_action, GtkWidget * w
 	gchar *I1, *config_options;
 	const gchar *INFO = _("Bluefish is an editor for experienced web designers and programmers. It supports many programming and markup languages, but focuses on editing dynamic and interactive websites. Bluefish is an open source development project, released under the GPL license.\n\nFor more information, visit the Bluefish Website at http://bluefish.openoffice.nl/\n\nThis version of bluefish was compiled with the following options:\n");
 	const gchar *AUTHORS = _("Project leader:\n\
-  Olivier Sessink <olivier@bluefish.openoffice.nl>\n\
-\n\
-Developers for this release:\n\
-  Olivier Sessink\n\
-   <olivier@bluefish.openoffice.nl>\n\
-  Jim Hayward\n\
-   <jim@bluefish.openoffice.nl>\n\
-  Daniel Leidert\n\
-   <daniel.leidert@wgdd.de>\n\
-  Oskar Świda\n\
-   <swida@aragorn.pb.bialystok.pl>\n\
-  David Marrs\n\
-   <David.Marrs@myrealbox.com>\n\
-  Michèle Garoche\n\
-   <michele.garoche@easyconnect.fr>\n\
-\n\
-Developers for previous releases:\n\
-  Oskar Świda\n\
-   <swida@aragorn.pb.bialystok.pl>\n\
-  Eugene Morenko(More)\n\
-   <more@irpin.com>\n\
-  Alastair Porter\n\
-   <alastair@porter.net.nz>\n\
-  Chris Mazuc\n\
-  Neil Millar\n\
-  Gero Takke\n\
-  Bo Forslund\n\
-  David Arno\n\
-  Pablo De Napoli\n\
-  Santiago Capel Torres\n\
-  Rasmus Toftdahl Olesen\n\
-   <rto@pohldata.dk>\n\
-  Roland Steinbach\n\
-   <roland@netzblick.de>\n\
-  Christian Tellefsen\n\
-   <chris@tellefsen.net>\n\
-  Antti-Juhani Kaijanaho\n\
-\n\
-Documentation:\n\
-  Michèle Garoche\n\
-   <michele.garoche@easyconnect.fr>\n\
-  Scott White\n\
-   <wwsw3@earthlink.net>\n\
-  Anita Lewis\n\
-   <ajreiki@highstream.net>\n\
-  Alastair Porter\n\
-   <alastair@porter.net.nz>\n\
-  Daniel Blair\n\
-   <joecamel@realcoders.org>\n\
-  Olivier Sessink\n\
-   <olivier@bluefish.openoffice.nl>\n\
-  Denny Reeh\n\
-\n\
-Package Maintainers:\n\
-  Debian:   Daniel Leidert\n\
-   <daniel.leidert@wgdd.de>\n\
-  Redhat:   Matthias Haase\n\
-   <matthias_haase@bennewitz.com>\n\
-  Mandrake: Todd Lyons\n\
-   <todd@mrball.net>\n\
-  Fink: Michèle Garoche\n\
-   <michele.garoche@easyconnect.fr>\n\
-\n\
-If you know of anyone missing from this list, please let us know\n\
-<bluefish@bluefish.openoffice.nl>\n\
-\n\
-Thanks to all who helped making this software available.\n\
-");
+	                         Olivier Sessink <olivier@bluefish.openoffice.nl>\n\
+	                         \n\
+	                         Developers for this release:\n\
+	                         Olivier Sessink\n\
+	                         <olivier@bluefish.openoffice.nl>\n\
+	                         Jim Hayward\n\
+	                         <jim@bluefish.openoffice.nl>\n\
+	                         Daniel Leidert\n\
+	                         <daniel.leidert@wgdd.de>\n\
+	                         Oskar Świda\n\
+	                         <swida@aragorn.pb.bialystok.pl>\n\
+	                         David Marrs\n\
+	                         <David.Marrs@myrealbox.com>\n\
+	                         Michèle Garoche\n\
+	                         <michele.garoche@easyconnect.fr>\n\
+	                         \n\
+	                         Developers for previous releases:\n\
+	                         Oskar Świda\n\
+	                         <swida@aragorn.pb.bialystok.pl>\n\
+	                         Eugene Morenko(More)\n\
+	                         <more@irpin.com>\n\
+	                         Alastair Porter\n\
+	                         <alastair@porter.net.nz>\n\
+	                         Chris Mazuc\n\
+	                         Neil Millar\n\
+	                         Gero Takke\n\
+	                         Bo Forslund\n\
+	                         David Arno\n\
+	                         Pablo De Napoli\n\
+	                         Santiago Capel Torres\n\
+	                         Rasmus Toftdahl Olesen\n\
+	                         <rto@pohldata.dk>\n\
+	                         Roland Steinbach\n\
+	                         <roland@netzblick.de>\n\
+	                         Christian Tellefsen\n\
+	                         <chris@tellefsen.net>\n\
+	                         Antti-Juhani Kaijanaho\n\
+	                         \n\
+	                         Documentation:\n\
+	                         Michèle Garoche\n\
+	                         <michele.garoche@easyconnect.fr>\n\
+	                         Scott White\n\
+	                         <wwsw3@earthlink.net>\n\
+	                         Anita Lewis\n\
+	                         <ajreiki@highstream.net>\n\
+	                         Alastair Porter\n\
+	                         <alastair@porter.net.nz>\n\
+	                         Daniel Blair\n\
+	                         <joecamel@realcoders.org>\n\
+	                         Olivier Sessink\n\
+	                         <olivier@bluefish.openoffice.nl>\n\
+	                         Denny Reeh\n\
+	                         \n\
+	                         Package Maintainers:\n\
+	                         Debian:   Daniel Leidert\n\
+	                         <daniel.leidert@wgdd.de>\n\
+	                         Redhat:   Matthias Haase\n\
+	                         <matthias_haase@bennewitz.com>\n\
+	                         Mandrake: Todd Lyons\n\
+	                         <todd@mrball.net>\n\
+	                         Fink: Michèle Garoche\n\
+	                         <michele.garoche@easyconnect.fr>\n\
+	                         \n\
+	                         If you know of anyone missing from this list, please let us know\n\
+	                         <bluefish@bluefish.openoffice.nl>\n\
+	                         \n\
+	                         Thanks to all who helped making this software available.\n\
+	                         ");
 	const gchar *TRANSLATORS = _("Current translators:\n\n\
-  Basque: Hizkuntza Politikarako Sailburuordetza\n\
-   <hizkpol@ej-gv.es>\n\n\
-  Brazilian Portuguese: Anderson Rocha\n\
-   <anderson@maxlinux.com.br>\n\n\
-  Bulgarian: Peio Popov\n\
-   <peio@peio.org>\n\n\
-  Chinese: Ting Yang (Dormouse)\n\
-   <mouselinux@163.com>\n\n\
-  Chinese, Traditional: OLS3\n\
-   <ols3@lxer.idv.tw>\n\n\
-  Danish: Rasmus Toftdahl Olesen\n\
-   <rto@pohldata.dk>\n\n\
-  Finnish: Juho Roukala\n\
-   <j.mr@luukku.com>\n\n\
-  French: Michèle Garoche\n\
-   <michele.garoche@easyconnect.fr>\n\n\
-  German: Roland Steinbach\n\
-   <roland@netzblick.de>\n\n\
-  Hungarian: Péter Sáska\n\
-   <sasek@ccsystem.hu>\n\n\
-  Italian: Stefano Canepa\n\
-   <sc@linux.it>\n\n\
-  Japanese: Takeshi Hamasaki\n\
-   <hma@syd.odn.ne.jp>\n\n\
-  Norwegian: Christian Tellefsen\n\
-   <chris@tellefsen.net>\n\n\
-  Polish: Oskar Swida\n\
-   <swida@aragorn.pb.bialystok.pl>\n\n\
-  Portuguese: Lopo Pizarro\n\
-   <lopopizarro@netcabo.pt>\n\n\
-  Russian: Eugene Rupakov\n\
-   <rupakov@jet.msk.su>\n\n\
-  Serbian: Marko Milenović\n\
-   <raven@sbb.co.yu>\n\n\
-  Slovak: Vladimir VASIL\n\
-   <vvasil@post.sk>\n\n\
-  Spanish: Walter Oscar Echarri\n\
-   <wecharri@gmail.com>\n\n\
-  Swedish: David Smeringe\n\
-   <david.smeringe@telia.com>\n\n\
-  Tamil: Murugapandian Barathee\n\
-   <barathee@yahoo.com>\n\n\
-  Turkish: Oğuz Eren\n\
-   <ogzeren@gmail.com>\n\n\
-");
+	                             Basque: Hizkuntza Politikarako Sailburuordetza\n\
+	                             <hizkpol@ej-gv.es>\n\n\
+	                             Brazilian Portuguese: Anderson Rocha\n\
+	                             <anderson@maxlinux.com.br>\n\n\
+	                             Bulgarian: Peio Popov\n\
+	                             <peio@peio.org>\n\n\
+	                             Chinese: Ting Yang (Dormouse)\n\
+	                             <mouselinux@163.com>\n\n\
+	                             Chinese, Traditional: OLS3\n\
+	                             <ols3@lxer.idv.tw>\n\n\
+	                             Danish: Rasmus Toftdahl Olesen\n\
+	                             <rto@pohldata.dk>\n\n\
+	                             Finnish: Juho Roukala\n\
+	                             <j.mr@luukku.com>\n\n\
+	                             French: Michèle Garoche\n\
+	                             <michele.garoche@easyconnect.fr>\n\n\
+	                             German: Roland Steinbach\n\
+	                             <roland@netzblick.de>\n\n\
+	                             Hungarian: Péter Sáska\n\
+	                             <sasek@ccsystem.hu>\n\n\
+	                             Italian: Stefano Canepa\n\
+	                             <sc@linux.it>\n\n\
+	                             Japanese: Takeshi Hamasaki\n\
+	                             <hma@syd.odn.ne.jp>\n\n\
+	                             Norwegian: Christian Tellefsen\n\
+	                             <chris@tellefsen.net>\n\n\
+	                             Polish: Oskar Swida\n\
+	                             <swida@aragorn.pb.bialystok.pl>\n\n\
+	                             Portuguese: Lopo Pizarro\n\
+	                             <lopopizarro@netcabo.pt>\n\n\
+	                             Russian: Eugene Rupakov\n\
+	                             <rupakov@jet.msk.su>\n\n\
+	                             Serbian: Marko Milenović\n\
+	                             <raven@sbb.co.yu>\n\n\
+	                             Slovak: Vladimir VASIL\n\
+	                             <vvasil@post.sk>\n\n\
+	                             Spanish: Walter Oscar Echarri\n\
+	                             <wecharri@gmail.com>\n\n\
+	                             Swedish: David Smeringe\n\
+	                             <david.smeringe@telia.com>\n\n\
+	                             Tamil: Murugapandian Barathee\n\
+	                             <barathee@yahoo.com>\n\n\
+	                             Turkish: Oğuz Eren\n\
+	                             <ogzeren@gmail.com>\n\n\
+	                             ");
 
 	info = window_full2(_("About Bluefish"), GTK_WIN_POS_CENTER, 6
-			,G_CALLBACK(about_dialog_close_lcb),NULL, TRUE, NULL);
+	                    ,G_CALLBACK(about_dialog_close_lcb),NULL, TRUE, NULL);
 	gtk_window_set_resizable(GTK_WINDOW(info), FALSE);
 	color.red = 65535;
 	color.blue = 65535;
@@ -183,7 +183,11 @@ Thanks to all who helped making this software available.\n\
 	{
 		GError *error=NULL;
 		GtkWidget *image;
+#ifdef WIN32
+		GdkPixbuf* pixbuf= gdk_pixbuf_new_from_file(BLUEFISH_PNG_PATH,&error);
+#else
 		GdkPixbuf* pixbuf= gdk_pixbuf_new_from_file(BLUEFISH_SPLASH_FILENAME,&error);
+#endif	/* WIN32 */		
 		if (error) {
 			g_print("ERROR while loading splash screen: %s\n", error->message);
 			g_error_free(error);
@@ -202,27 +206,27 @@ Thanks to all who helped making this software available.\n\
 
 	config_options = g_strconcat (CONFIGURE_OPTIONS, _("\n\nResulting in the detection of:\n"),
 #ifdef HAVE_LIBASPELL
-			"libaspell\n",
+	                              "libaspell\n",
 #endif
 #ifdef DEVELOPMENT
-			"Development request\n",
+	                              "Development request\n",
 #endif
 #ifdef ENABLE_NLS
-			"i18n request\n",
+	                              "i18n request\n",
 #endif
 #ifdef HAVE_ATLEAST_GTK_2_4
-			"GTK+ 2.4 or newer\n",
+	                              "GTK+ 2.4 or newer\n",
 #endif
 #ifdef HAVE_ATLEAST_GNOMEVFS_2_6
-			"GnomeVFS 2.6 or newer\n",
+	                              "GnomeVFS 2.6 or newer\n",
 #endif
 #ifdef HAVE_ATLEAST_GNOMEUI_2_6
-			"libgnomeui 2.6 or newer\n",
+	                              "libgnomeui 2.6 or newer\n",
 #endif
 #ifdef PLATFORM_DARWIN
-			"Platform Darwin",
+	                              "Platform Darwin",
 #endif
-			NULL);
+	                              NULL);
 
 	/* add pages */
 	I1 = g_strconcat(INFO, config_options, NULL);
