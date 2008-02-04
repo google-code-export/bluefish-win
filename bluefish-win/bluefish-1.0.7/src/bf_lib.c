@@ -30,13 +30,14 @@
 
 #include "bluefish.h"  /* for DEBUG_MSG and stuff like that */
 #include "bf_lib.h"  /* myself */
-
+#ifndef _WIN_32_DIRSTRCHR
 #ifdef WIN32
 #define DIRSTR "\\"
 #define DIRCHR 92
 #else
 #define DIRSTR "/"
 #define DIRCHR '/'
+#endif
 #endif
 /**
  * get_filename_on_disk_encoding
@@ -141,8 +142,12 @@ gchar *filemode_to_string(mode_t statmode) {
  * Return value: #gchar* newly allocated, or NULL
  */
 gchar *return_root_with_protocol(const gchar *url) {
-	gchar *q;
+ #ifdef WIN32
+	 return win_return_root_with_protocol(url);
+#endif
 	if (!url) return NULL;
+	DEBUG_MSG("return_root_with_protocol:%s\n",url);
+	gchar *q;
 	q = strchr(url,':');
 	if (q && *(q+1)=='/' && *(q+2)=='/' && *(q+3)!='\0') {
 		/* we have a protocol */
@@ -159,6 +164,28 @@ gchar *return_root_with_protocol(const gchar *url) {
 	/* no root known */
 	return NULL;
 }
+
+gchar *win_return_root_with_protocol(const gchar *url){
+#ifndef WIN32
+	return return_root_with_protocol( url);
+#endif
+	if (!url) return NULL;
+	gchar *q;
+	if (g_str_has_prefix(url,"http://") ||g_str_has_prefix(url,"https://")
+		 ||g_str_has_prefix(url,"ftp://")||g_str_has_prefix(url,"sftp://")
+	    ||g_str_has_prefix(url,"file://")){
+			q =strchr(url,':');
+			return (g_strndup(url,q -url+1));
+	}else{
+		q = strchr(url,':');
+		if (q){
+			 return g_strconcat("/",g_strndup(url,q - url+1),NULL);
+		 }else if (url[0] == '/'){
+			 return g_strdup(url);
+		 }
+	 }
+	return NULL;
+ }
 
 /**
  * pointer_switch_addresses:
@@ -937,7 +964,7 @@ gchar *trunc_on_char(gchar * string, gchar which_char)
 gchar *most_efficient_filename(gchar *filename) {
 	gint i,j, len;
 #ifdef WIN32
-	//bf_chrrepl(filename,"\\","/");
+	/* bf_chrrepl(filename,"\\","/"); */
 #endif
 	DEBUG_MSG("most_efficient_filename, 1 filename=%s\n", filename);
 	len = strlen(filename);
@@ -980,7 +1007,7 @@ gchar *create_relative_link_to(gchar * current_filepath, gchar * link_to_filepat
 	gint common_lenght, maxcommonlen;
 	gint current_filename_length, link_to_filename_length, current_dirname_length, link_to_dirname_length;
 	gint count, deeper_dirs;
-
+	gchar *temp, *temp2;
 	if (!current_filepath){
 		returnstring = most_efficient_filename(g_strdup(link_to_filepath));
 		return returnstring;
@@ -993,8 +1020,17 @@ gchar *create_relative_link_to(gchar * current_filepath, gchar * link_to_filepat
 	DEBUG_MSG("eff_current: '%s'\n",eff_current_filepath);
 	DEBUG_MSG("eff_link_to: '%s'\n",eff_link_to_filepath);
 	/* get the size of the directory of the current_filename */
+#ifdef WIN32
+	temp = strrchr(eff_current_filepath,DIRCHR);
+	if (temp == NULL){temp = strrchr(eff_current_filepath,'/');}
+	current_filename_length = (temp == NULL ? 0 : strlen(temp)-1);
+	temp2 = strrchr(eff_link_to_filepath, DIRCHR);
+	if (temp2 == NULL){temp2 = strrchr(eff_link_to_filepath, '/');}
+	link_to_filename_length = (temp2 == NULL ? 0 : strlen(temp2)-1);
+#else	
 	current_filename_length = strlen(strrchr(eff_current_filepath, DIRCHR))-1;
 	link_to_filename_length = strlen(strrchr(eff_link_to_filepath, DIRCHR))-1;
+#endif
 	DEBUG_MSG("create_relative_link_to, filenames: current: %d, link_to:%d\n", current_filename_length,link_to_filename_length); 
 	current_dirname_length = strlen(eff_current_filepath) - current_filename_length;
 	link_to_dirname_length = strlen(eff_link_to_filepath) - link_to_filename_length;
@@ -1047,6 +1083,8 @@ gchar *create_relative_link_to(gchar * current_filepath, gchar * link_to_filepat
 	}
 	strcat(returnstring, &eff_link_to_filepath[common_lenght+1]);
 	DEBUG_MSG("create_relative_link_to, returnstring=%s\n", returnstring);
+	g_free(temp);
+	g_free(temp2);
 	g_free(eff_current_filepath);
 	g_free(eff_link_to_filepath);
 	return returnstring;
@@ -1126,12 +1164,23 @@ gchar *ending_slash(const gchar *dirname) {
 	if (!dirname) {
 		return g_strdup("");
 	}
-
+#ifdef WIN32
+		gchar * tmp = g_strdup(dirname);
+	bf_chrrepl(tmp,"/","\\");
+	if (tmp[strlen(tmp)-1] == DIRCHR) {
+		g_free(tmp);
+		return g_strdup(dirname);
+	} else {
+		g_free(tmp);
+		return g_strconcat(dirname, "/", NULL);
+	}
+#else
 	if (dirname[strlen(dirname)-1] == DIRCHR) {
 		return g_strdup(dirname);
 	} else {
 		return g_strconcat(dirname, DIRSTR, NULL);
 	}
+#endif
 }
 /**
  * path_get_dirname_with_ending_slash:
@@ -1146,6 +1195,9 @@ gchar *ending_slash(const gchar *dirname) {
  **/
 gchar *path_get_dirname_with_ending_slash(const gchar *filename) {
 	gchar *tmp = strrchr(filename, DIRCHR);
+#ifdef WIN32
+	if (!tmp) {tmp = strrchr(filename, 47);}
+#endif /* WIN32 */
 	if (tmp) {
 		return g_strndup(filename, (tmp - filename + 1));
 	} else {
@@ -1167,7 +1219,13 @@ gchar *path_get_dirname_with_ending_slash(const gchar *filename) {
  **/
 gboolean file_exists_and_readable(const gchar * filename) {
 	gchar *ondiskencoding;
-	gboolean retval=TRUE;
+	/* not sure the purpose of returning true here by default so I changed it to false. */
+	gboolean retval=FALSE;
+
+#ifdef WIN32
+	if (filename[0] == '/') { filename++;}
+#endif /* WIN32 */
+
 #ifdef DEVELOPMENT
 	g_assert(filename);
 #endif
@@ -1178,7 +1236,7 @@ gboolean file_exists_and_readable(const gchar * filename) {
 	DEBUG_MSG("file_exists_and_readable, filename(%p)=\"%s\", strlen(filename)=%d\n", filename, filename, strlen(filename));
 	ondiskencoding = get_filename_on_disk_encoding(filename);
 	DEBUG_MSG("file_exists_and_readable, ondiskencoding='%s'\n",ondiskencoding);
-#ifndef WIN32
+/* #ifndef WIN32 */
 #ifdef HAVE_GNOME_VFS
 	{
 		GnomeVFSURI* uri;
@@ -1197,7 +1255,7 @@ gboolean file_exists_and_readable(const gchar * filename) {
 	}
 #endif /* HAVE_GNOME_VFS */
 	g_free(ondiskencoding);
-#endif /* WIN32 */
+/* #endif */ /* NOT WIN32 */
 	return retval;
 }
 /**
@@ -1330,8 +1388,11 @@ gchar *create_secure_dir_return_filename() {
 	if (!name) {
 		return NULL;
 	}
-
-	if (mkdir(name, 0700) != 0) {
+#ifdef WIN32
+	if (mkdir(name) != 0) {
+#else
+	if (mkdir(name, 0700) !=0) {
+#endif
 		g_free(name);
 		return NULL;
 	}
@@ -1451,3 +1512,29 @@ GList *glist_from_gslist(GSList *src) {
 	}
 	return target;
 }
+/* Inplace replacement of character find with character repl in source string */
+void bf_chrrepl(gchar *source,const gchar *find, const gchar *repl){
+	if (source){
+		gint i,len = strlen(source);
+		for (i =0; i<len ;i++)
+		{
+			if (source[i] == (gint)find[0]){
+				source[i]= (gint)repl[0];
+			}
+		}
+	}
+}
+
+/*
+void fixpath(gchar *source){
+	if (source){
+		gint i,len = strlen(source);
+		for (i =0; i<len ;i++)
+		{
+			if (source[i]== 92){
+				source[i]= 47;
+			}
+		}
+	}
+}
+*/

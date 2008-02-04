@@ -976,7 +976,9 @@ static GtkWidget *remove_recent_entry(Tbfwin *bfwin, const gchar *filename, gboo
 	GList *tmplist;
 	GList **worklist;
 	gpointer tmp;
-
+/*#ifdef WIN32
+	if (filename[0] == '/') { filename ++;}
+#endif*/ /* WIN32 */
 	worklist = (is_project) ? &bfwin->menu_recent_projects : &bfwin->menu_recent_files;
 
 	if(strcmp(filename, "last") ==0) {
@@ -1029,6 +1031,10 @@ static void open_recent_file_cb(GtkWidget *widget, Tbfwin *bfwin) {
  * this pointer can be added in the main_v->recent_files list */
 static GtkWidget *create_recent_entry(Tbfwin *bfwin, const gchar *filename, gboolean is_project, gboolean check_for_duplicates) {
 	GtkWidget *tmp;
+
+/*#ifdef WIN32
+	if (filename[0] == '/') { filename ++;}
+#endif*/ /* WIN32 */
 
 	if (check_for_duplicates) {
 		tmp = remove_recent_entry(bfwin,filename,is_project);
@@ -1115,8 +1121,14 @@ void recent_menu_init_project(Tbfwin *bfwin) {
  * This should be called when a new file is opened, i.e. from
  * file_open_cb, it adds a new entry which also appears in the
  * menu bar, and (if nessecary) deletes the last entry */
+/* in my opinion,
+ * there is a bug in this function in that it
+ * does not check if the entry already exists. -- spodhajecki. */
 void add_to_recent_list(Tbfwin *bfwin,gchar *filename, gint closed_file, gboolean is_project) {
 	DEBUG_MSG("add_to_recent_list, started for %s\n", filename);
+#ifdef WIN32
+	if (filename[0] == '/') {filename ++;}
+#endif /* WIN32 */
 	if (closed_file) {
 		GList *tmplist = g_list_first(main_v->bfwinlist);
 		while (tmplist) {
@@ -1328,7 +1340,12 @@ static void external_command_lcb(GtkWidget *widget, Tbfw_dynmenu *bdm) {
 		if (bdm->bfwin->current_document->filename[0] == '/'){
 			/* for local files we chdir() to their directory */
 			gchar *tmpstring = g_path_get_dirname(bdm->bfwin->current_document->filename);
+#ifdef WIN32
+			if (tmpstring[0] == '/')
+				chdir(tmpstring + 1);
+#else
 			chdir(tmpstring);
+#endif /* WIN32 */
 			g_free(tmpstring);
 		}
 	}

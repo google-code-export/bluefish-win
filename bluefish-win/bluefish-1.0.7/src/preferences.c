@@ -1146,9 +1146,19 @@ static void highlightpattern_gui_rebuild_filetype_popup(Tprefdialog *pd) {
 }
 
 static void highlightpattern_reset_clicked_lcb(GtkWidget *button, Tprefdialog *pd) {
+#ifndef WIN32	
 	gchar *defaultfile = return_first_existing_filename(PKGDATADIR"highlighting.default",
 									"data/highlighting.default",
 									"../data/highlighting.default",NULL);
+#else
+	gchar *pkgtmp = g_strdup("");
+	printf("preferences.c:1155\n");
+	pkgtmp = g_strconcat(PKG_DATA_DIR,"highlighting.default",NULL);
+	gchar *defaultfile = return_first_existing_filename(pkgtmp,
+									"data/highlighting.default",
+									"../data/highlighting.default",NULL);
+	g_free(pkgtmp);
+#endif
 	if (defaultfile) {
 		/* get current selected filetype && create array to compare to*/
 		gchar **compare = array_from_arglist(pd->hpd.selected_filetype, NULL);

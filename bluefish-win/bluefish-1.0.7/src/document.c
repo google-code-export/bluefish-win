@@ -40,13 +40,14 @@
 #include <stdlib.h>            /* system() */
 #include <time.h>              /* ctime_r() */
 #include <pcre.h>
-
+#ifdef MINGW32
+#include "ctime.c"
+#endif
 /* #define DEBUG */
 
 #ifdef DEBUGPROFILING
 #include <sys/times.h>
 #endif
-
 #include "bluefish.h"
 #include "document.h"
 #include "bf_lib.h"

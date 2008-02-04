@@ -26,10 +26,10 @@
 #define HL_DEBUG 
 #define DEBUG */
 
-#ifdef DEBUG
+/* #ifdef DEBUG
 #define DEVELOPMENT
 #endif
-
+ */
 #ifdef HL_TIMING /* some overall profiling information, not per pattern, but per type of code , interesting to bluefish programmers*/
 #include <sys/times.h>
 #include <unistd.h>

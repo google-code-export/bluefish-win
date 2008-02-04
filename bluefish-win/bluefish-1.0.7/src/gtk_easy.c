@@ -33,8 +33,10 @@
 #include "pixmap.h"
 
 #ifdef WIN32
+#ifndef _WIN_32_DIRSTRCHR
 #define DIRSTR "\\"
 #define DIRCHR 92
+#endif /* _WIN_32_DIRSTRCHR */
 #else
 #define DIRSTR "/"
 #define DIRCHR '/'

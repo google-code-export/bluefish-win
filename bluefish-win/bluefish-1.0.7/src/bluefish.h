@@ -27,16 +27,28 @@
 
 #include "config.h"
 #define BLUEFISH_SPLASH_FILENAME PKGDATADIR"bluefish_splash.png"
+#ifdef WIN32
+#ifndef MAXPATH
+#define MAXPATH 260
+#endif /* MAXPATH */
+gchar *PKG_DATA_DIR;
+gchar *LOCALE_DIR;
+gchar *BLUEFISH_PNG_PATH;
+#endif 
 
 #ifdef HAVE_SYS_MSG_H
 #define WITH_MSG_QUEUE
 #endif
 
 #ifdef DEBUG
+#ifdef WIN32
+#define DEBUG_MSG printf
+#else
 #define DEBUG_MSG g_print
+#endif /* WIN32 */
 #else /* not DEBUG */
 #ifdef __GNUC__
-#define DEBUG_MSG(args...)
+#define DEBUG_MSG(args,...)
  /**/
 #else/* notdef __GNUC__ */
 extern void g_none(gchar *first, ...);
@@ -58,8 +70,14 @@ extern void g_none(gchar *first, ...);
 #endif    
 
 
+#ifdef WIN32
+#define DIRSTR "\\"
+#define DIRCHR 92
+#define _WIN_32_DIRSTRCHR
+#else
 #define DIRSTR "/"
 #define DIRCHR '/'
+#endif
 
 #include <sys/types.h>
 #include <regex.h>
