@@ -71,6 +71,7 @@ void g_none(gchar *first, ...) {
 	return;
 }
 #endif
+void bf_set_cwd(const char* appPath);
 
 static gint parse_commandline(int argc, char **argv
 		, gboolean *root_override
@@ -137,16 +138,18 @@ int main(int argc, char *argv[])
 {
 /* Dynamically create paths for Win32 */	
 #ifdef WIN32
- 	gchar *path = g_malloc0(MAXPATH+1);
-	gchar *ctmp = g_malloc0(MAXPATH+1);
-	if (GetModuleFileName(NULL,path,MAXPATH) != 0) {
-	DEBUG_MSG("GetModuleFileName=%s\n",path);
-	
+ 	gchar *path = g_malloc0(MAX_PATH+1);
+	gchar *ctmp = g_malloc0(MAX_PATH+1);
+	if (GetModuleFileName(NULL,path,MAX_PATH) != 0) {
+	/* set current working directory */
+	bf_set_cwd(path);
+	/* create other paths */	
 	ctmp = g_strdup(path_get_dirname_with_ending_slash(path));
 	if (ctmp[strlen(ctmp)-1] == '\\'){
 		ctmp[strlen(ctmp)-1]='\0';
 		ctmp = g_strdup(path_get_dirname_with_ending_slash(ctmp));
 		}
+
 	bf_chrrepl(ctmp,"\\","/");	
 	PKG_DATA_DIR = g_strconcat(ctmp,"share/bluefish/",NULL);
 	LOCALE_DIR = g_strconcat(ctmp,"share/locale",NULL);
@@ -422,4 +425,17 @@ void bluefish_exit_request() {
 #endif
  */	DEBUG_MSG("Bluefish: exiting cleanly\n");
 	exit(0);
+}
+
+void bf_set_cwd(const char* appPath){
+	if (appPath){
+		gchar *cwd = g_malloc0(strlen(appPath+1));
+		strncpy(cwd,appPath,(strrchr(appPath,'\\')-appPath));
+		if (cwd){
+			SetCurrentDirectory(cwd);
+			_chdir(cwd);
+			DEBUG_MSG("Current directory set to: %s\n",cwd);
+		}
+		g_free(cwd);
+	}
 }
