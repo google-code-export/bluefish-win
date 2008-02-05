@@ -40,6 +40,7 @@
 #include <stdlib.h>            /* system() */
 #include <time.h>              /* ctime_r() */
 #include <pcre.h>
+/* ctime_r is not part of stock MinGW pagkage */
 #ifdef MINGW32
 #include "ctime.c"
 #endif
@@ -1655,7 +1656,11 @@ static gint doc_check_backup(Tdocument *doc) {
 		res = file_copy(doc->filename, backupfilename);
 #ifdef HAVE_GNOME_VFS
 		if (doc->fileinfo) {
+#ifdef WIN32
+			gnome_vfs_set_file_info(ondiskencoding, doc->fileinfo, GNOME_VFS_SET_FILE_INFO_PERMISSIONS);
+#else
 			gnome_vfs_set_file_info(ondiskencoding, doc->fileinfo, GNOME_VFS_SET_FILE_INFO_PERMISSIONS|GNOME_VFS_SET_FILE_INFO_OWNER);
+#endif
 		}
 #else
 		if (doc->statbuf.st_uid != -1 && !doc->is_symlink) {

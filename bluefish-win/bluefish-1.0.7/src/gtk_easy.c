@@ -1343,7 +1343,12 @@ GtkWidget *file_but_new(GtkWidget * which_entry, gint full_pathname, Tbfwin *bfw
 
 static void file_chooser_set_current_dir(GtkWidget *dialog, const gchar *dir) {
 	if (dir) {
-		if (dir[0] == '/') gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),dir);
+		if (dir[0] == '/')
+#ifndef WIN32
+			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),dir);
+#else
+			{dir++;gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),dir);}
+#endif
 		else gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog),dir);
 	}
 }
@@ -1364,8 +1369,11 @@ GtkWidget * file_chooser_dialog(Tbfwin *bfwin, gchar *title, GtkFileChooserActio
 	gtk_file_chooser_set_local_only (GTK_FILE_CHOOSER(dialog), localonly);
 	gtk_file_chooser_set_select_multiple (GTK_FILE_CHOOSER(dialog), multiple);	
 	
+#ifdef WIN32
+	/* if (set[0]== '/') set++; */
+#endif
 	if (set && strlen(set)) {
-		DEBUG_MSG("file_chooser_dialog, set=%s,localonly=%d\n",set,localonly);
+		g_print("file_chooser_dialog, set=%s,localonly=%d\n",set,localonly);
 		if (localonly || strchr(set,':')==NULL) {
 			gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),set);
 		} else {

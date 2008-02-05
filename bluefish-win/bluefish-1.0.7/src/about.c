@@ -53,7 +53,7 @@ void about_dialog_create(gpointer * data, guint * callback_action, GtkWidget * w
 	GtkWidget *info_ok_button;
 	GdkColor color;
 	gchar *I1, *config_options;
-	const gchar *INFO = _("Bluefish is an editor for experienced web designers and programmers. It supports many programming and markup languages, but focuses on editing dynamic and interactive websites. Bluefish is an open source development project, released under the GPL license.\n\nFor more information, visit the Bluefish Website at http://bluefish.openoffice.nl/\n\nThis version of bluefish was compiled with the following options:\n");
+	const gchar *INFO = _("Bluefish is an editor for experienced web designers and programmers. It supports many programming and markup languages, but focuses on editing dynamic and interactive websites. Bluefish is an open source development project, released under the GPL license.\n\nFor more information, visit the Bluefish Website at http://bluefish.openoffice.nl/\n\nThis version of bluefish was compiled for Windows with the following options:\n");
 	const gchar *AUTHORS = _("Project leader:\n\
 	                         Olivier Sessink <olivier@bluefish.openoffice.nl>\n\
 	                         \n\
