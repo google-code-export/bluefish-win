@@ -1152,7 +1152,6 @@ static void highlightpattern_reset_clicked_lcb(GtkWidget *button, Tprefdialog *p
 									"../data/highlighting.default",NULL);
 #else
 	gchar *pkgtmp = g_strdup("");
-	printf("preferences.c:1155\n");
 	pkgtmp = g_strconcat(PKG_DATA_DIR,"highlighting.default",NULL);
 	gchar *defaultfile = return_first_existing_filename(pkgtmp,
 									"data/highlighting.default",

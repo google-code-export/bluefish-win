@@ -28,7 +28,6 @@
 
 #include "bluefish.h"
 
-#define _GNU_SOURCE
 #ifdef HAVE_GNOME_VFS
 #include <libgnomevfs/gnome-vfs.h>
 #endif
@@ -216,6 +215,7 @@ int main(int argc, char *argv[])
 		msg_queue_start(filenames, projectfiles, open_in_new_window);
 	}
 #endif /* WITH_MSG_QUEUE */
+
 #ifndef NOSPLASH
 	if (main_v->props.show_splash_screen) {
 		/* start splash screen somewhere here */
@@ -223,12 +223,12 @@ int main(int argc, char *argv[])
 		splash_screen_set_label(_("parsing highlighting file..."));
 	}
 #endif /* #ifndef NOSPLASH */
-
 	{
 		gchar *filename = g_strconcat(g_get_home_dir(), "/.bluefish/dir_history", NULL);
 		main_v->recent_directories = get_stringlist(filename, NULL);
 		g_free(filename);
 	}
+	
 	rcfile_parse_global_session();
 	rcfile_parse_highlighting();
 #ifndef NOSPLASH
@@ -328,13 +328,15 @@ int main(int argc, char *argv[])
 	
 #ifndef NOSPLASH
 	if (main_v->props.show_splash_screen) {
-		/*static struct timespec const req = { 0, 10000000};*/
+#ifndef WIN32		
+		static struct timespec const req = { 0, 10000000};
 		flush_queue();
-		/*nanosleep(&req, NULL);*/
+		nanosleep(&req, NULL);
+#else
+		flush_queue();
+#endif
 		gtk_widget_destroy(splash_window);
-		DEBUG_MSG("splash destroyed.\n");
-	}	
-
+	}
 #endif /* #ifndef NOSPLASH */
 	DEBUG_MSG("main, before gtk_main()\n");
 	gtk_main();
@@ -345,7 +347,6 @@ int main(int argc, char *argv[])
 	/* do the cleanup */
 	msg_queue_cleanup();
 #endif /* WITH_MSG_QUEUE */
-	 
 	DEBUG_MSG("Bluefish: exiting cleanly\n");
 	return 0;
 }
@@ -418,12 +419,7 @@ void bluefish_exit_request() {
 	/* do the cleanup */
 	msg_queue_cleanup();
 #endif /* WITH_MSG_QUEUE */
-/* #ifdef WIN32
-	g_free(PKG_DATA_DIR);
-	g_free(LOCALE_DIR);
-	g_free(BLUEFISH_PNG_PATH);
-#endif
- */	DEBUG_MSG("Bluefish: exiting cleanly\n");
+	DEBUG_MSG("Bluefish: exiting cleanly\n");
 	exit(0);
 }
 
