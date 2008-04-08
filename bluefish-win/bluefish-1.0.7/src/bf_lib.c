@@ -142,9 +142,10 @@ gchar *filemode_to_string(mode_t statmode) {
  * Return value: #gchar* newly allocated, or NULL
  */
 gchar *return_root_with_protocol(const gchar *url) {
- #ifdef WIN32
+/* #ifdef WIN32
 	 return win_return_root_with_protocol(url);
 #endif
+ */
 	if (!url) return NULL;
 	DEBUG_MSG("return_root_with_protocol:%s\n",url);
 	gchar *q;
@@ -963,9 +964,6 @@ gchar *trunc_on_char(gchar * string, gchar which_char)
  **/
 gchar *most_efficient_filename(gchar *filename) {
 	gint i,j, len;
-#ifdef WIN32
-	/* bf_chrrepl(filename,"\\","/"); */
-#endif
 	DEBUG_MSG("most_efficient_filename, 1 filename=%s\n", filename);
 	len = strlen(filename);
 	for (i=0; i < len-4; i++) {
@@ -1220,10 +1218,11 @@ gchar *path_get_dirname_with_ending_slash(const gchar *filename) {
 gboolean file_exists_and_readable(const gchar * filename) {
 	gchar *ondiskencoding;
 	/* not sure the purpose of returning true here by default so I changed it to false. */
-	gboolean retval=FALSE;
+	/* gboolean retval=TRUE; */
+	gboolean retval = FALSE;
 
 #ifdef WIN32
-	if (filename[0] == '/') { filename++;}
+	 if (filename[0] == '/') { filename++;}
 #endif /* WIN32 */
 
 #ifdef DEVELOPMENT
@@ -1236,7 +1235,6 @@ gboolean file_exists_and_readable(const gchar * filename) {
 	DEBUG_MSG("file_exists_and_readable, filename(%p)=\"%s\", strlen(filename)=%d\n", filename, filename, strlen(filename));
 	ondiskencoding = get_filename_on_disk_encoding(filename);
 	DEBUG_MSG("file_exists_and_readable, ondiskencoding='%s'\n",ondiskencoding);
-/* #ifndef WIN32 */
 #ifdef HAVE_GNOME_VFS
 	{
 		GnomeVFSURI* uri;
@@ -1248,14 +1246,19 @@ gboolean file_exists_and_readable(const gchar * filename) {
 	}
 #else /* HAVE_GNOME_VFS */
 	{
+#ifdef WIN32		
+		struct _stat naamstat;
+		errno = 0;
+		retval = ((_stat(ondiskencoding, &naamstat) == 0) && (errno == 0));
+#else /* NOT WIN32 */
 		struct stat naamstat;
 		errno = 0;
 		retval = ((stat(ondiskencoding, &naamstat) == 0) && (errno == 0));
-		DEBUG_MSG("file_exists_and_readable, retval=%d (ernno=%d) for %s\n",retval,errno,ondiskencoding);
+#endif
+		DEBUG_MSG("file_exists_and_readable, retval=%d (ernno=%d) for\n %s\n",retval,errno,ondiskencoding);
 	}
 #endif /* HAVE_GNOME_VFS */
 	g_free(ondiskencoding);
-/* #endif */ /* NOT WIN32 */
 	return retval;
 }
 /**

@@ -28,6 +28,12 @@
 #include "config.h"
 #define BLUEFISH_SPLASH_FILENAME PKGDATADIR"bluefish_splash.png"
 #ifdef WIN32
+#include <windows.h>
+//#define g_get_home_dir() g_getenv("APPDATA)
+#ifdef g_get_home_dir
+#undef g_get_home_dir
+#define g_get_home_dir g_get_user_config_dir
+#endif
 #ifndef MAXPATH
 #define MAXPATH 260
 #endif /* MAXPATH */

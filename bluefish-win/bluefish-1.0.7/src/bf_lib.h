@@ -77,6 +77,5 @@ void remove_secure_dir_and_filename(gchar *filename);
 void wordcount(gchar *text, guint *chars, guint *lines, guint *words);
 GList *glist_from_gslist(GSList *src);
 void bf_chrrepl(gchar *source,const gchar *find, const gchar *repl);
-/* void fixpath(gchar *source); */
 gchar *win_return_root_with_protocol(const gchar *url);
 #endif /* __BF_LIB_H_ */

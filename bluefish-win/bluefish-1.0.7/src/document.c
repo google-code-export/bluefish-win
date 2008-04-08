@@ -40,15 +40,13 @@
 #include <stdlib.h>            /* system() */
 #include <time.h>              /* ctime_r() */
 #include <pcre.h>
-/* ctime_r is not part of stock MinGW pagkage */
-#ifdef MINGW32
-#include "ctime.c"
-#endif
+
 /* #define DEBUG */
 
 #ifdef DEBUGPROFILING
 #include <sys/times.h>
 #endif
+
 #include "bluefish.h"
 #include "document.h"
 #include "bf_lib.h"
@@ -65,6 +63,14 @@
 #include "snr2.h"          /* snr2_run_extern_replace */
 #include "stringlist.h"    /* free_stringlist() */
 #include "undo_redo.h"     /* doc_unre_init() */
+
+#ifdef WIN32
+#include "ctime.c"
+#define S_ISLNK(x) false
+#include <sys/stat.h>
+#define lstat(path, sb) stat((path), (sb))
+#endif
+
 
 typedef struct {
 	GtkWidget *textview;
@@ -910,12 +916,16 @@ static void doc_set_stat_info(Tdocument *doc) {
 #else
 		struct stat statbuf;
 		if (lstat(ondiskencoding, &statbuf) == 0) {
+#ifndef WIN32			
 			if (S_ISLNK(statbuf.st_mode)) {
 				doc->is_symlink = 1;
 				stat(ondiskencoding, &statbuf);
 			} else {
 				doc->is_symlink = 0;
 			}
+#else
+				doc->is_symlink = 0;
+#endif			
 			doc->statbuf = statbuf;
 		}
 #endif
@@ -1664,8 +1674,10 @@ static gint doc_check_backup(Tdocument *doc) {
 		}
 #else
 		if (doc->statbuf.st_uid != -1 && !doc->is_symlink) {
+#ifndef WIN32			
 			chmod(ondiskencoding, doc->statbuf.st_mode);
 			chown(ondiskencoding, doc->statbuf.st_uid, doc->statbuf.st_gid);
+#endif
 		}
 #endif
 		g_free(ondiskencoding);
@@ -2276,13 +2288,13 @@ gint doc_textbox_to_file(Tdocument * doc, gchar * filename, gboolean window_clos
 	if (main_v->props.auto_update_meta_date) {
 		time_t time_var;
 		struct tm *time_struct;
-		gchar isotime[60];
+		gchar isotime[75];
 		gchar *date_tmp;
 		
 		time_var = time(NULL);
 		time_struct = localtime(&time_var);
-		strftime(isotime, 30, "%Y-%m-%dT%H:%M:%S%z", time_struct);
-		
+		strftime(isotime, 45, "%Y-%m-%dT%H:%M:%S%z", time_struct);
+
 		date_tmp = g_strconcat("<meta name=\"date\" content=\"",isotime,"\"",NULL);
 		snr2_run_extern_replace(doc,"<meta[ \t\n]+name[ \t\n]*=[ \t\n]*\"date\"[ \t\n]+content[ \t\n]*=[ \t\n]*\"[^\"]*\"[ \t\n]*",0,1,0,date_tmp,FALSE);
 		g_free(date_tmp);
@@ -2297,6 +2309,11 @@ gint doc_textbox_to_file(Tdocument * doc, gchar * filename, gboolean window_clos
 		/* } */
 	}
 
+#ifdef WIN32
+	/* attempt to fix problems with line endings */
+	/* repalce crlf with lf before save */
+	snr2_run_extern_replace(doc,"\r\n",0,1,0,"\n",FALSE);
+#endif
 	/* This writes the contents of a textbox to a file */
 	backup_retval = doc_check_backup(doc);
 

@@ -1032,7 +1032,11 @@ static void create_file_or_dir_ok_clicked_lcb(GtkWidget *widget, Tcfod *ws) {
 #ifdef HAVE_GNOME_VFS
 					gnome_vfs_make_directory(ondiskencoding,0755);
 #else
+#ifdef WIN32	
+					if(mkdir(ondiskencoding) == -1) {
+#else
 					if(mkdir(ondiskencoding, 0755)== -1) {
+#endif
 /*						error_dialog(_("Error creating directory"),strerror(errno));*/
 					}
 #endif

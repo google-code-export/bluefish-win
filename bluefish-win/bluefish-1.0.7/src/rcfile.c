@@ -527,10 +527,11 @@ void rcfile_parse_main(void)
 		arr = array_from_arglist(_("Gnome default"), "gnome-moz-remote --newwin %s&",NULL);
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
 #else
-		arr = array_from_arglist(_("Firefox"), "C:/Progra~1/Mozill~1/firefox.exe -remote 'openURL(%s, new-tab)' || firefox %s&",NULL);
+		arr = array_from_arglist(_("Firefox"), "C:\\PROGRA~1\\MOZILL~1\\firefox.exe -remote \"openURL(%s, new-tab)\"",NULL);
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
-		arr = array_from_arglist(_("Internet Explorer"), "C:/PROGRA~1/INTERN~1/IEXPLORE.EXE %s || iexplore %s",NULL);
+		arr = array_from_arglist(_("Internet Explorer"), "C:\\PROGRA~1\\INTERN~1\\IEXPLORE.EXE %s || iexplore %s",NULL);
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
+/* id add opera here if I had the default install path */		
 #endif /* WIN32 */
 	}
 	{
@@ -593,7 +594,7 @@ void rcfile_parse_main(void)
 #else
 		gchar *tmp = g_strdup("");
 		tmp = g_strconcat(PKG_DATA_DIR,"filetypes.default",NULL);
-		gchar *defaultfile = return_first_existing_filename(PKG_DATA_DIR,
+		gchar *defaultfile = return_first_existing_filename(tmp,
 									"data/filetypes.default",
 									"../data/filetypes.default",NULL);
 #endif

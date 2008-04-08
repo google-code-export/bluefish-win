@@ -107,13 +107,13 @@ static gboolean msg_queue_check_alive(gboolean wait_first)
 		char mtext[MSQ_QUEUE_SMALL_SIZE];
 	} small_msgp;
 	gchar *pid_string = g_strdup_printf("%d", (int) getpid());
-
+#ifndef WIN32
 	if (wait_first) {
 		static struct timespec const req = { 0, MSQ_QUEUE_CHECK_TIME * 1000000};
 		static struct timespec rem;
 		nanosleep(&req, &rem);
 	}
-
+#endif
 	while (msgrcv
 		   (msg_queue.msgid, &small_msgp, MSQ_QUEUE_SMALL_SIZE * sizeof(char), MSG_QUEUE_SEND_ALIVE,
 			IPC_NOWAIT) != -1) {
@@ -325,9 +325,11 @@ static gboolean msg_queue_send_names(gint send_with_id, GList * names, gboolean 
 			if (retval == -1) {
 				DEBUG_MSG("msg_queue_send_files, failed sending, errno=%d\n", errno);
 				if (errno == EAGAIN) { /* EAGAIN = 11 */
+#ifndef WIN32
 					static struct timespec const req = { 0, MSG_QUEUE_PER_DOCUMENT_TIMEOUT};
 					static struct timespec rem;
 					nanosleep(&req, &rem);
+#endif					
 					send_failure_cnt++;
 				} else {
 					DEBUG_MSG("msg_queue_send_files, failing to send, errno=%d, aborting\n", errno);

@@ -370,7 +370,7 @@ static void insert_time_cancel(GtkWidget * widget, TimeInsert * data)
 void insert_time_dialog(Tbfwin *bfwin) {
 
 	gint month, year, count;
-	gchar isotime[60];
+	gchar isotime[75];
 	time_t time_var;
 	gchar *temp = NULL;
 	struct tm *time_struct;
@@ -435,7 +435,7 @@ void insert_time_dialog(Tbfwin *bfwin) {
 			temp[strlen(temp) - 1] = ')';
 			break;
 		case 6:
-			strftime(isotime, 30, "%Y-%m-%dT%H:%M:%S%z", time_struct);
+			strftime(isotime, 45, "%Y-%m-%dT%H:%M:%S%z", time_struct);
 			temp = g_strdup_printf(_("  ISO-8601 Ti_me (%s)"), isotime);
 			break;
 		default:
@@ -1123,7 +1123,11 @@ void quickstart_dialog(Tbfwin *bfwin, Ttagpopup *data) {
 	{		
 		gchar *tmpstr;
 		const gchar *endstr = main_v->props.xhtml == 1 ? " />" : ">";
+#ifdef WIN32
+		tmpstr = g_strconcat("<meta name=\"generator\" content=\"Bluefish-Win\"",endstr,NULL);
+#else
 		tmpstr = g_strconcat("<meta name=\"generator\" content=\"Bluefish\"",endstr,NULL);
+#endif
 		recent_attribs.headerlist = add_to_stringlist(recent_attribs.headerlist, tmpstr);
 		g_free(tmpstr);
 		tmpstr = g_strconcat("<meta name=\"author\" content=\"\"",endstr,NULL);

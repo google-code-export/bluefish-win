@@ -1373,7 +1373,7 @@ GtkWidget * file_chooser_dialog(Tbfwin *bfwin, gchar *title, GtkFileChooserActio
 	/* if (set[0]== '/') set++; */
 #endif
 	if (set && strlen(set)) {
-		g_print("file_chooser_dialog, set=%s,localonly=%d\n",set,localonly);
+		DEBUG_MSG("file_chooser_dialog, set=%s,localonly=%d\n",set,localonly);
 		if (localonly || strchr(set,':')==NULL) {
 			gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),set);
 		} else {
