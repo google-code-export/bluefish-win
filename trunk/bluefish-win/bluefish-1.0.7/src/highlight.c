@@ -23,8 +23,8 @@
  */
 
 /* #define HL_TIMING
-#define HL_DEBUG 
-#define DEBUG */
+#define HL_DEBUG */
+/*#define DEBUG */
 
 #ifdef DEBUG
 #define DEVELOPMENT

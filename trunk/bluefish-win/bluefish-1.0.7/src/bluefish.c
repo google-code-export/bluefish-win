@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 	ctmp = g_strdup(path_get_dirname_with_ending_slash(path));
 	if (ctmp[strlen(ctmp)-1] == '\\'){
 		ctmp[strlen(ctmp)-1]='\0';
-		ctmp = g_strdup(path_get_dirname_with_ending_slash(ctmp));
+		ctmp = g_strdup(path_get_dirname_with_ending_slash(ctmp)); 
 		}
 
 	bf_chrrepl(ctmp,"\\","/");	

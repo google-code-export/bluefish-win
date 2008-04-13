@@ -142,10 +142,10 @@ gchar *filemode_to_string(mode_t statmode) {
  * Return value: #gchar* newly allocated, or NULL
  */
 gchar *return_root_with_protocol(const gchar *url) {
-/* #ifdef WIN32
+ #ifdef WIN32
 	 return win_return_root_with_protocol(url);
 #endif
- */
+
 	if (!url) return NULL;
 	DEBUG_MSG("return_root_with_protocol:%s\n",url);
 	gchar *q;
@@ -170,21 +170,32 @@ gchar *win_return_root_with_protocol(const gchar *url){
 #ifndef WIN32
 	return return_root_with_protocol( url);
 #endif
+	printf("win_return_root_with_protocol %s\n",url);
 	if (!url) return NULL;
 	gchar *q;
 	if (g_str_has_prefix(url,"http://") ||g_str_has_prefix(url,"https://")
 		 ||g_str_has_prefix(url,"ftp://")||g_str_has_prefix(url,"sftp://")
 	    ||g_str_has_prefix(url,"file://")){
 			q =strchr(url,':');
-			return (g_strndup(url,q -url+1));
+			if (q){
+			return (g_strndup(url,q - url));
+			}
 	}else{
 		q = strchr(url,':');
 		if (q){
-			 return g_strconcat("/",g_strndup(url,q - url+1),NULL);
-		 }else if (url[0] == '/'){
+			gchar *mtmp = g_strndup(url,(q - url)+2);
+			printf("one url=%s q=%s,\n",url,mtmp);
+			g_free(mtmp);
+			 return g_strndup(url,(q - url)+2);
+		 }else if (strncmp(url,"\\",1)==0){
+			 printf("two:%s\n",url);
+			 return g_strdup(url+1);
+		 }else{
+			 printf("three\n");
 			 return g_strdup(url);
 		 }
 	 }
+	printf("win_return_root_with_protocol returning NULL\n");
 	return NULL;
  }
 
@@ -1126,9 +1137,15 @@ gchar *create_full_path(const gchar * filename, const gchar *basedir) {
 #else
 			/* THIS IS A BUG, IF YOU DON'T HAVE GNOME_VFS BUT YOU DO HAVE 
 			GTK-2.4 A %21 OR SOMETHING LIKE THAT IS NOW NOT CONVERTED !!!!!!!!! */
+#ifdef WIN32
+			return g_strdup(bf_strrepl(filename+7,"%20"," "));
+#endif
 			return g_strdup(filename+7); /* file:// URI's are never relative paths */
 #endif
 		}
+#ifdef WIN32
+		return g_strdup(bf_strrepl(filename,"%20"," "));
+#endif
 		return g_strdup(filename); /* cannot do this on remote paths */
 	}
 #endif /* HAVE_GNOME_VFS */
@@ -1146,6 +1163,9 @@ gchar *create_full_path(const gchar * filename, const gchar *basedir) {
 		g_free(tmpcdir);
 	}
 	absolute_filename = most_efficient_filename(absolute_filename);
+#ifdef WIN32
+			return g_strdup(bf_strrepl(absolute_filename,"%20"," "));
+#endif
 	return absolute_filename;
 }
 
@@ -1170,7 +1190,7 @@ gchar *ending_slash(const gchar *dirname) {
 		return g_strdup(dirname);
 	} else {
 		g_free(tmp);
-		return g_strconcat(dirname, "/", NULL);
+		return g_strconcat(dirname, "\\", NULL);
 	}
 #else
 	if (dirname[strlen(dirname)-1] == DIRCHR) {
@@ -1192,15 +1212,27 @@ gchar *ending_slash(const gchar *dirname) {
  * Return value: a newly allocated gchar * dirname that does end on a '/', or NULL on failure
  **/
 gchar *path_get_dirname_with_ending_slash(const gchar *filename) {
-	gchar *tmp = strrchr(filename, DIRCHR);
 #ifdef WIN32
-	if (!tmp) {tmp = strrchr(filename, 47);}
-#endif /* WIN32 */
+	printf("path_get_dirname_with_ending_slash: %s\n",filename);
+	gchar *tmp1 = bf_strrepl(filename,"%20"," ");
+	printf("path_get_dirname_with_ending_slash-strrepl:%s\n",tmp1);
+	gchar *tmp = strrchr(tmp1, DIRCHR);
+	printf("path_get_dirname_with_ending_slash-strrchr:%s\n",tmp);
+	if (!tmp) {tmp = strrchr(tmp1,47);}
+	if (tmp) {
+		return g_strndup(tmp1, (tmp - tmp1 + 1));
+	} else {
+		return NULL;
+	}
+#else 
+	gchar *tmp = strrchr(filename, DIRCHR);
 	if (tmp) {
 		return g_strndup(filename, (tmp - filename + 1));
 	} else {
 		return NULL;
 	}
+#endif
+	
 }
 
 /**
@@ -1222,7 +1254,7 @@ gboolean file_exists_and_readable(const gchar * filename) {
 	gboolean retval = FALSE;
 
 #ifdef WIN32
-	 if (filename[0] == '/') { filename++;}
+	 if (strchr(filename,'/')==filename) filename++;
 #endif /* WIN32 */
 
 #ifdef DEVELOPMENT
@@ -1515,7 +1547,13 @@ GList *glist_from_gslist(GSList *src) {
 	}
 	return target;
 }
+/************************************************************************/
+/*	The following functions were added by Stephen Podhajecki for         */
+/*	Win32 compatability                                                  */
+/************************************************************************/
+
 /* Inplace replacement of character find with character repl in source string */
+/* mainly used to replace "/" with "\\" */
 void bf_chrrepl(gchar *source,const gchar *find, const gchar *repl){
 	if (source){
 		gint i,len = strlen(source);
@@ -1525,6 +1563,35 @@ void bf_chrrepl(gchar *source,const gchar *find, const gchar *repl){
 				source[i]= (gint)repl[0];
 			}
 		}
+	}
+}
+
+/* generic string replace function, returns pointer to new string */
+gchar *bf_strrepl(const gchar *old, const gchar *search, const gchar *repl){
+ gint count =0;
+ gchar *index;	
+ if (repl == NULL) return NULL;
+ if (search == NULL) return NULL;
+ if (old == NULL) return NULL;
+ index = strstr(old,search);
+ while (index){
+	 count += 1;
+	 index = strstr(index+strlen(search),search);
+	 }
+ if (count > 0){
+	 gint grow =  strlen(old) - (strlen(search)*count)+(strlen(repl)*count);
+	 gchar *newstr= (gchar *)calloc(1,grow +1);
+	 gint i;
+	 for (i=0;i<count;i++){
+		 index = strstr(old,search);
+		 strncat(newstr,old,(index-old));
+		 strcat(newstr,repl);
+		 old = index + strlen(search);
+		}
+	 strcat(newstr,old);
+	 return newstr;
+	}else{
+		return g_strdup(old);
 	}
 }
 
