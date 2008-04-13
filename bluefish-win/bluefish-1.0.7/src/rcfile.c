@@ -527,9 +527,9 @@ void rcfile_parse_main(void)
 		arr = array_from_arglist(_("Gnome default"), "gnome-moz-remote --newwin %s&",NULL);
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
 #else
-		arr = array_from_arglist(_("Firefox"), "C:\\PROGRA~1\\MOZILL~1\\firefox.exe -remote \"openURL(%s, new-tab)\"",NULL);
+		arr = array_from_arglist(_("Firefox"), "C:\\PROGRA~1\\MOZILL~1\\firefox.exe -remote \"openURL(%s, new-tab)\"&",NULL);
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
-		arr = array_from_arglist(_("Internet Explorer"), "C:\\PROGRA~1\\INTERN~1\\IEXPLORE.EXE %s || iexplore %s",NULL);
+		arr = array_from_arglist(_("Internet Explorer"), "C:\\PROGRA~1\\INTERN~1\\IEXPLORE.EXE \"%s\" &",NULL);
 		main_v->props.browsers = g_list_append(main_v->props.browsers,arr);
 /* id add opera here if I had the default install path */		
 #endif /* WIN32 */
